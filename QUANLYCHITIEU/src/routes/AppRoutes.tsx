@@ -8,6 +8,7 @@ import TransactionPage from "../pages/TransactionPage";
 import { WalletPage } from "../pages/WalletPage";
 import CategoryListPage from "../pages/ListCategoriesPage";
 import TransactionHistoryPage from "../pages/HistoryTransactionPage";
+import AddCategoryPage from "../pages/AddCategoryPage";
 
 function AppRoutes() {
   return (
@@ -49,6 +50,14 @@ function AppRoutes() {
         element={
             <ClientLayout>
           <TransactionHistoryPage/>
+          </ClientLayout>
+        }
+      />
+        <Route
+        path="/createCategory"
+        element={
+            <ClientLayout>
+          <AddCategoryPage/>
           </ClientLayout>
         }
       />

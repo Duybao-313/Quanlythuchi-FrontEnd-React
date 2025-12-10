@@ -3,6 +3,7 @@ import type { CategoryResponse } from "../type/CategoriesResponse";
 
 
 const API_BASE = "http://localhost:8080";
+const token = localStorage.getItem("token");
 
 async function handleResponse<T>(res: Response): Promise<T | null> {
   // res là Response từ fetch, có method json()
@@ -17,7 +18,6 @@ async function handleResponse<T>(res: Response): Promise<T | null> {
 }
 
 export async function listCategories(): Promise<CategoryResponse[]> {
-  const token = localStorage.getItem("accessToken");
   const res = await fetch(`${API_BASE}/categories`, {
     method: "GET",
     headers: {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { listCategories } from "../service/Categories";
 import type { CategoryResponse } from "../type/CategoriesResponse";
 
@@ -112,15 +112,15 @@ export default function CategoryListPage() {
           ))
         )}
 
-        {/* Footer: nút Khác (add new) */}
+       
         <div className="p-3">
-          <button
+          <Link to="/createCategory"
             onClick={onClickOther}
             className="w-full flex items-center justify-center gap-3 p-3 rounded-lg border border-dashed border-gray-200 text-sm text-blue-600 hover:bg-blue-50"
           >
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-blue-50 text-blue-600">+</div>
-            <div>Khác</div>
-          </button>
+            <Link to="/createCategory">Khác</Link>
+          </Link>
         </div>
       </div>
     </div>
