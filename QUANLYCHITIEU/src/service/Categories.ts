@@ -18,7 +18,7 @@ async function handleResponse<T>(res: Response): Promise<T | null> {
 }
 
 export async function listCategories(): Promise<CategoryResponse[]> {
-  const res = await fetch(`${API_BASE}/categories`, {
+  const res = await fetch(`${API_BASE}/users/me/categories`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

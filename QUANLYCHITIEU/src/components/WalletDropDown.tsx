@@ -20,7 +20,6 @@ export default function WalletDropdown({
   const [highlight, setHighlight] = useState<number>(-1);
   const ref = useRef<HTMLDivElement | null>(null);
 
-  // click outside: đóng dropdown và reset highlight
   useEffect(() => {
     function onDoc(e: MouseEvent) {
       if (!ref.current) return;

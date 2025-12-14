@@ -5,8 +5,8 @@ import { fetchWallets } from "../service/WalletService";
 
 export function useWallets() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [wloading, setLoading] = useState(false);
+  const [werror, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -29,5 +29,5 @@ export function useWallets() {
     load();
   }, [load]);
 
-  return { wallets, loading, error, reload: load, setWallets };
+  return { wallets, wloading, werror, reload: load, setWallets };
 }

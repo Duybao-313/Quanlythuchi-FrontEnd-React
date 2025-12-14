@@ -47,23 +47,100 @@ export async function createTransaction(req: TransactionRequest): Promise<ApiRes
     };
   }
 }
-export async function fetchTransactions(): Promise<TransactionResponse[]> {
-  const token = localStorage.getItem("token"); // hoặc từ cookie/context
+export async function fetchTransactions(
+  params?: Record<string, unknown>,
+  init?: RequestInit
+): Promise<TransactionResponse[]> {
+  const token = localStorage.getItem("token") ?? "";
+console.log(init)
+console.log("hihi")
+console.log(params)
 
-  const res = await fetch(`${API_BASE}/transactions`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+  const toDateOnly = (d: Date) => {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  };
 
-    
-  });
-  const json: ApiResponse<TransactionResponse[]> = await res.json();
-
-  if (!json.success) {
-    throw new Error(json.message ?? "Lỗi tải giao dịch");
+  const normalized: Record<string, string> = {};
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      if (v instanceof Date) {
+        normalized[k] = toDateOnly(v);
+      } else if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+        // already date-only
+        normalized[k] = v;
+      } else if (v !== undefined && v !== null && v !== "") {
+        normalized[k] = String(v);
+      }
+    }
   }
 
-  return json.data ?? [];
+  const qs =
+    Object.keys(normalized).length > 0
+      ? "?" +
+        Object.entries(normalized)
+          .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+          .join("&")
+      : "";
+
+  const url = `${API_BASE}/transactions/user${qs}`;
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      ...init,
+    });
+  } catch (err) {
+    throw new Error(err instanceof Error ? err.message : "Không thể kết nối tới server");
+  }
+
+  const text = await response.text();
+  let parsed: unknown = null;
+  try {
+    parsed = text ? JSON.parse(text) : null;
+  } catch {
+    parsed = null;
+  }
+
+  if (!response.ok) {
+    const msg =
+      parsed &&
+      typeof parsed === "object" &&
+      "message" in parsed &&
+      typeof (parsed as Record<string, unknown>)["message"] === "string"
+        ? String((parsed as Record<string, unknown>)["message"])
+        : `Server trả lỗi ${response.status}`;
+    throw new Error(msg);
+  }
+
+  if (Array.isArray(parsed)) return parsed as TransactionResponse[];
+
+  if (
+    parsed &&
+    typeof parsed === "object" &&
+    "success" in parsed &&
+    typeof (parsed as Record<string, unknown>)["success"] === "boolean"
+  ) {
+    const api = parsed as ApiResponse<unknown>;
+    if (!api.success) {
+      const msg =
+        typeof (api as unknown as Record<string, unknown>)["message"] === "string"
+          ? String((api as unknown as Record<string, unknown>)["message"])
+          : "Lỗi tải giao dịch";
+      throw new Error(msg);
+    }
+    const data = api.data;
+    if (Array.isArray(data)) return data as TransactionResponse[];
+    if (data && typeof data === "object" && Array.isArray((data as Record<string, unknown>)["items"])) {
+      return (data as Record<string, unknown>)["items"] as TransactionResponse[];
+    }
+    return [];
+  }
+
+  return [];
 }

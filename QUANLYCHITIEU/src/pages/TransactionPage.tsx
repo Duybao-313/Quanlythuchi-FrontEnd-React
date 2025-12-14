@@ -14,7 +14,7 @@ import { listCategories } from "../service/Categories";
 import type { Transaction } from "../type/Transaction";
 
 export default function TransactionPage() {
-  const { wallets, loading, error, reload } = useWallets();
+  const { wallets, wloading, werror, reload } = useWallets();
   const [selectedWallet, setSelectedWallet] = useState<number | null>(wallets[0]?.id ?? null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -50,7 +50,7 @@ export default function TransactionPage() {
     return () => {
       controller.abort();
     };
-  }, []); // thêm listCategories vào dependencies nếu hàm này thay đổi
+  }, []);
 
   useEffect(() => {
     if (wallets.length && selectedWallet == null) setSelectedWallet(wallets[0].id);
@@ -106,11 +106,11 @@ const handleSubmitTransaction = async (
       <div className="bg-white rounded-xl shadow p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Tạo giao dịch mới</h2>
 
-        {loading ? (
+        {wloading ? (
           <div>Đang tải ví...</div>
-        ) : error ? (
+        ) : werror ? (
           <div className="text-red-500">
-            Lỗi: {error}{" "}
+            Lỗi: {werror}{" "}
             <button onClick={reload} className="ml-2 underline">
               Thử lại
             </button>

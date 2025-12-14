@@ -7,11 +7,11 @@ import { toast } from "react-toastify";
 import { deleteWallet } from "../service/WalletService";
 
 export const WalletList: React.FC = () => {
-  const { wallets, loading, error, reload } = useWallets();
+  const { wallets, wloading, werror, reload } = useWallets();
   const [deletingWallet, setDeletingWallet] = useState<Wallet | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  if (loading) {
+  if (wloading) {
     return (
       <div className="space-y-3">
         {[...Array(3)].map((_, i) => (
@@ -27,11 +27,11 @@ export const WalletList: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (werror) {
     return (
       <div className="p-4 border rounded bg-red-50 text-red-700">
         <div className="font-medium mb-2">Không tải được danh sách ví</div>
-        <div className="text-sm mb-3">{error}</div>
+        <div className="text-sm mb-3">{werror}</div>
         <button onClick={reload} className="px-3 py-1.5 rounded border bg-white hover:bg-gray-50">Thử lại</button>
       </div>
     );

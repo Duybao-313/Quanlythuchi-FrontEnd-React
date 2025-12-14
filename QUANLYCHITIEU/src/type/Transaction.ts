@@ -8,6 +8,4 @@ export interface Transaction {
   walletId: number;
   categoryId?: number;
   date?: string; 
-  createdAt?: string;
-  updatedAt?: string;
 }

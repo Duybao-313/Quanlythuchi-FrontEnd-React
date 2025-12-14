@@ -8,4 +8,5 @@ export interface TransactionResponse {
   description: string;
   categoryName: string;
   walletName: string;
+  date:Date;
 }
