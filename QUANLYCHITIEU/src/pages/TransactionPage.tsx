@@ -15,7 +15,9 @@ import type { Transaction } from "../type/Transaction";
 
 export default function TransactionPage() {
   const { wallets, wloading, werror, reload } = useWallets();
-  const [selectedWallet, setSelectedWallet] = useState<number | null>(wallets[0]?.id ?? null);
+  const [selectedWallet, setSelectedWallet] = useState<number | null>(
+    wallets[0]?.id ?? null
+  );
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
@@ -31,7 +33,7 @@ export default function TransactionPage() {
       setCatError(null);
       try {
         // Nếu listCategories hỗ trợ signal, truyền controller.signal; nếu không, gọi như hiện tại
-        const data = await listCategories(); 
+        const data = await listCategories();
         setCategories(data ?? []);
       } catch (err: unknown) {
         // Nếu request bị abort, không set error
@@ -53,11 +55,14 @@ export default function TransactionPage() {
   }, []);
 
   useEffect(() => {
-    if (wallets.length && selectedWallet == null) setSelectedWallet(wallets[0].id);
+    if (wallets.length && selectedWallet == null)
+      setSelectedWallet(wallets[0].id);
   }, [wallets, selectedWallet]);
 
   // handler tạo ví từ modal
-  const handleCreateWallet = async (req: WalletRequest): Promise<ApiResponse<Wallet> | void> => {
+  const handleCreateWallet = async (
+    req: WalletRequest
+  ): Promise<ApiResponse<Wallet> | void> => {
     try {
       const res = await createWallet(req);
       if (!res || !res.success) {
@@ -74,32 +79,32 @@ export default function TransactionPage() {
   };
 
   // handler submit giao dịch từ TransactionForm
-const handleSubmitTransaction = async (
-  payload: TransactionRequest
-): Promise<ApiResponse<Transaction>> => {
-  try {
-    if (!payload.walletId && selectedWallet != null) {
-      payload.walletId = selectedWallet;
-    }
-    if (!payload.categoryId && selectedCategory != null) {
-      payload.categoryId = selectedCategory;
-    }
+  const handleSubmitTransaction = async (
+    payload: TransactionRequest
+  ): Promise<ApiResponse<Transaction>> => {
+    try {
+      if (!payload.walletId && selectedWallet != null) {
+        payload.walletId = selectedWallet;
+      }
+      if (!payload.categoryId && selectedCategory != null) {
+        payload.categoryId = selectedCategory;
+      }
 
-    const res = await createTransaction(payload);
+      const res = await createTransaction(payload);
 
-    return res;
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    // luôn trả về ApiResponse thất bại để form xử lý
-    return {
-      success: false,
-      code: "CLIENT_ERROR",
-      message,
-      data: null,
-      timestamp: new Date().toISOString(),
-    };
-  }
-};
+      return res;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      // luôn trả về ApiResponse thất bại để form xử lý
+      return {
+        success: false,
+        code: "CLIENT_ERROR",
+        message,
+        data: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -118,22 +123,24 @@ const handleSubmitTransaction = async (
         ) : wallets.length === 0 ? (
           <div>
             Chưa có ví.{" "}
-            <button onClick={() => setShowCreateModal(true)} className="ml-2 text-blue-600">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="ml-2 text-blue-600"
+            >
               Tạo ví
             </button>
           </div>
         ) : (
           <>
-
             {/* TransactionForm được đặt ngay sau phần dropdown */}
             <div className="mt-6">
               <TransactionForm
                 wallets={wallets}
+                categories={categories}
                 onCreateWallet={() => setShowCreateModal(true)}
                 onSubmit={handleSubmitTransaction}
                 selectedCategory={selectedCategory}
                 reload={reload}
-            
               />
 
               {/* dùng component tách riêng */}
@@ -151,7 +158,10 @@ const handleSubmitTransaction = async (
       </div>
 
       {showCreateModal && (
-        <CreateWalletModal onClose={() => setShowCreateModal(false)} onCreate={handleCreateWallet} />
+        <CreateWalletModal
+          onClose={() => setShowCreateModal(false)}
+          onCreate={handleCreateWallet}
+        />
       )}
     </div>
   );

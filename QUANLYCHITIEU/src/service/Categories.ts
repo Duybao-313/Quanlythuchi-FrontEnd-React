@@ -1,13 +1,12 @@
 import type { ApiResponse } from "../type/ApiResponse";
 import type { CategoryResponse } from "../type/CategoriesResponse";
 
-
 const API_BASE = "http://localhost:8080";
 const token = localStorage.getItem("token");
 
 async function handleResponse<T>(res: Response): Promise<T | null> {
   // res là Response từ fetch, có method json()
-  const json = await res.json().catch(() => null) as ApiResponse<T> | null;
+  const json = (await res.json().catch(() => null)) as ApiResponse<T> | null;
 
   if (!res.ok) {
     const message = json?.message ?? `HTTP error ${res.status}`;
@@ -22,10 +21,28 @@ export async function listCategories(): Promise<CategoryResponse[]> {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { "Authorization": `Bearer ${token}` } : {})
-    }
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
   });
 
   const data = await handleResponse<CategoryResponse[]>(res);
   return data ?? [];
+}
+
+export async function deleteCategory(categoryId: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/users/me/categories/${categoryId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (!res.ok) {
+    const json = (await res
+      .json()
+      .catch(() => null)) as ApiResponse<unknown> | null;
+    const message = json?.message ?? `HTTP error ${res.status}`;
+    throw new Error(message);
+  }
 }

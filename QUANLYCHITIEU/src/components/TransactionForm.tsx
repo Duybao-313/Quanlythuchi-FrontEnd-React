@@ -1,4 +1,3 @@
-// src/components/TransactionForm.tsx
 import { useMemo, useState } from "react";
 import WalletSelect from "./WalletSelect";
 import AmountInput from "./AmoutInput";
@@ -6,9 +5,11 @@ import { toast } from "react-toastify";
 import type { Wallet } from "../type/Wallet";
 import type { ApiResponse } from "../type/ApiResponse";
 import type { Transaction } from "../type/Transaction";
+import type { CategoryResponse } from "../type/CategoriesResponse";
 
 type Props = {
   wallets: Wallet[];
+  categories: CategoryResponse[];
   onCreateWallet: () => void;
   selectedCategory: number | null;
   onSubmit: (payload: {
@@ -23,6 +24,7 @@ type Props = {
 
 export default function TransactionForm({
   wallets,
+  categories,
   selectedCategory,
   onCreateWallet,
   onSubmit,
@@ -53,7 +55,7 @@ export default function TransactionForm({
     });
 
     if (!res.success) {
-      console.log(res)
+      console.log(res);
       toast.error(res.message ?? "Tạo giao dịch thất bại");
     } else {
       toast.success("Tạo giao dịch thành công");
@@ -119,6 +121,16 @@ export default function TransactionForm({
           placeholder="Ghi chú..."
           className="w-full border rounded px-3 py-2 min-h-[80px]"
         />
+      </div>
+
+      <div className="md:col-span-2">
+        <div className="text-sm text-gray-600">
+          Ghi chú:{" "}
+          <span className="font-medium">
+            {categories.find((c) => c.id === selectedCategory)?.name ??
+              "Chưa chọn danh mục"}
+          </span>
+        </div>
       </div>
 
       <div className="md:col-span-2 flex items-center justify-between gap-4">

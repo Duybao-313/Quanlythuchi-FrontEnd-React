@@ -7,4 +7,5 @@ export interface CategoryResponse {
   type: TransactionType; // "EXPENSE" | "INCOME"
   iconUrl?: string | null;
   color?: string | null;
+  ownerId?: number | null;
 }
