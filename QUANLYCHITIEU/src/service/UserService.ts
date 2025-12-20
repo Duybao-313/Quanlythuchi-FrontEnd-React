@@ -20,12 +20,15 @@ export async function createCategoryForMe(
   const token = localStorage.getItem("token") ?? "";
 
   const form = new FormData();
-  form.append("data", JSON.stringify(payload));
+  // form.append("data", JSON.stringify(payload));
+  const jsonBlob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+form.append("data", jsonBlob, "data.json");
+
   if (file) form.append("file", file);
 
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}/me/categories`, {
+    res = await fetch(`${API_BASE}/categories`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

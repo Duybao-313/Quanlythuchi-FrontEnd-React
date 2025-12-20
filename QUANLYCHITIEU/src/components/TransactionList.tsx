@@ -38,14 +38,13 @@ export default function TransactionList({
             >
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-gray-900">
-                  {tx.categoryName ?? "Giao dịch"}
+                  Mục: {tx.categoryName ?? "Giao dịch"}
                 </div>
                 <div className="text-sm text-gray-700 break-words">
-                  {tx.description}
+                  Ghi chú: {tx.description}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
                   Tên ví: <span className="text-gray-700">{tx.walletName}</span>{" "}
-                  •{" "}
                   <span>
                     {new Date(tx.date ?? tx.date ?? "").toLocaleString("vi-VN")}
                   </span>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { listCategories, deleteCategory } from "../service/Categories";
 import type { CategoryResponse } from "../type/CategoriesResponse";
+import { toast } from "react-toastify";
 
 type ViewMode = "ALL" | "INCOME" | "EXPENSE";
 
@@ -20,7 +21,6 @@ export default function CategoryListPage() {
       setLoading(true);
       setError(null);
       try {
-        // Nếu listCategories hỗ trợ signal, truyền controller.signal; nếu không, gọi như hiện tại
         const data = await listCategories();
         console.log(data);
         setCategories(data ?? []);
@@ -41,7 +41,7 @@ export default function CategoryListPage() {
     return () => {
       controller.abort();
     };
-  }, []); // thêm listCategories vào dependencies nếu hàm này thay đổi
+  }, []); 
 
   const shownCategories = useMemo(() => {
     if (viewMode === "ALL") return categories;
@@ -64,6 +64,7 @@ export default function CategoryListPage() {
     try {
       await deleteCategory(categoryId);
       setCategories(categories.filter((c) => c.id !== categoryId));
+      toast.success("Xóa danh mục thành công");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Lỗi khi xóa danh mục";

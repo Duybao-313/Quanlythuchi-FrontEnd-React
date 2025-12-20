@@ -52,9 +52,7 @@ export async function fetchTransactions(
   init?: RequestInit
 ): Promise<TransactionResponse[]> {
   const token = localStorage.getItem("token") ?? "";
-console.log(init)
-console.log("hihi")
-console.log(params)
+
 
   const toDateOnly = (d: Date) => {
     const pad = (n: number) => String(n).padStart(2, "0");
