@@ -20,7 +20,6 @@ export async function createCategoryForMe(
   const token = localStorage.getItem("token") ?? "";
 
   const form = new FormData();
-  // form.append("data", JSON.stringify(payload));
   const jsonBlob = new Blob([JSON.stringify(payload)], { type: "application/json" });
 form.append("data", jsonBlob, "data.json");
 

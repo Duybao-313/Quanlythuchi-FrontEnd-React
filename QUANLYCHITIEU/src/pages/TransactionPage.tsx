@@ -61,10 +61,11 @@ export default function TransactionPage() {
 
   // handler tạo ví từ modal
   const handleCreateWallet = async (
-    req: WalletRequest
+    req: WalletRequest,
+    file?: File | null
   ): Promise<ApiResponse<Wallet> | void> => {
     try {
-      const res = await createWallet(req);
+      const res = await createWallet(req, file);
       if (!res || !res.success) {
         alert(res?.message ?? "Tạo ví thất bại");
         return res;
