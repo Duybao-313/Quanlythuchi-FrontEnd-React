@@ -76,12 +76,6 @@ export default function TransactionHistoryPage(): JSX.Element {
   }, [transactions]);
 
   useEffect(() => {
-    if (wallets.length && selectedWallet == null) {
-      setSelectedWallet(wallets[0].id);
-    }
-  }, [wallets, selectedWallet]);
-
-  useEffect(() => {
     const controller = new AbortController();
 
     async function fetchCategories() {
