@@ -82,7 +82,7 @@ export async function fetchTransactions(
       : "";
 
   const url = `${API_BASE}/transactions/user${qs}`;
-
+console.log("Fetching transactions from URL:", url);
   let response: Response;
   try {
     response = await fetch(url, {

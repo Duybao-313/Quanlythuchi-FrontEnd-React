@@ -7,6 +7,16 @@ import type { WalletResponse } from "../type/WalletResponse";
 
 const API_BASE = "http://localhost:8080";
 
+export interface WalletOverview {
+  totalBalance: number;
+  walletCount: number;
+  totalExpense: number;
+  totalIncome: number;
+  netBalance: number;
+  expenseCount: number;
+  incomeCount: number;
+}
+
 export async function fetchWallets(): Promise<ApiResponse<Wallet[]>> {
   const res = await fetch(`${API_BASE}/wallets`, {
     method: "GET",
@@ -25,6 +35,39 @@ export async function fetchWallets(): Promise<ApiResponse<Wallet[]>> {
   }
 
   const parsed = (await res.json()) as ApiResponse<Wallet[]>;
+  return parsed;
+}
+
+export async function fetchWalletOverview(
+  startDate?: string,
+  endDate?: string
+): Promise<ApiResponse<WalletOverview>> {
+  const token = localStorage.getItem("token") ?? "";
+
+  let url = `${API_BASE}/wallets/overview`;
+
+  // Thêm query parameters nếu có date
+  if (startDate && endDate) {
+    const params = new URLSearchParams();
+    params.append("startDate", startDate);
+    params.append("endDate", endDate);
+    url += `?${params.toString()}`;
+  }
+console.log ("Fetching wallet overview from URL:", url);
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+
+  const parsed = (await res.json()) as ApiResponse<WalletOverview>;
   return parsed;
 }
 
