@@ -20,6 +20,7 @@ type Props = {
     type: "INCOME" | "EXPENSE";
   }) => Promise<ApiResponse<Transaction>>;
   reload: () => Promise<void>;
+  onTypeChange?: (type: "INCOME" | "EXPENSE") => void;
 };
 
 export default function TransactionForm({
@@ -29,6 +30,7 @@ export default function TransactionForm({
   onCreateWallet,
   onSubmit,
   reload,
+  onTypeChange,
 }: Props) {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -36,6 +38,11 @@ export default function TransactionForm({
     wallets[0]?.id ?? null
   );
   const [type, setType] = useState<"INCOME" | "EXPENSE">("EXPENSE");
+
+  const handleTypeChange = (newType: "INCOME" | "EXPENSE") => {
+    setType(newType);
+    onTypeChange?.(newType);
+  };
   const [loading, setLoading] = useState(false);
 
   const parsedAmount = useMemo(() => {
@@ -81,7 +88,6 @@ export default function TransactionForm({
           wallets={wallets}
           value={walletId}
           onChange={setWalletId}
-          onCreateClick={onCreateWallet}
         />
       </div>
 
@@ -92,21 +98,25 @@ export default function TransactionForm({
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => setType("EXPENSE")}
-            className={`flex-1 py-2 rounded ${
-              type === "EXPENSE" ? "bg-red-500 text-white" : "border"
+            onClick={() => handleTypeChange("EXPENSE")}
+            className={`flex-1 py-2 rounded font-medium transition ${
+              type === "EXPENSE"
+                ? "bg-red-500 text-white shadow-md"
+                : "bg-gray-100 border border-gray-300 hover:bg-gray-200"
             }`}
           >
-            Chi
+            💰 Chi tiêu
           </button>
           <button
             type="button"
-            onClick={() => setType("INCOME")}
-            className={`flex-1 py-2 rounded ${
-              type === "INCOME" ? "bg-green-500 text-white" : "border"
+            onClick={() => handleTypeChange("INCOME")}
+            className={`flex-1 py-2 rounded font-medium transition ${
+              type === "INCOME"
+                ? "bg-green-500 text-white shadow-md"
+                : "bg-gray-100 border border-gray-300 hover:bg-gray-200"
             }`}
           >
-            Thu
+            📈 Thu nhập
           </button>
         </div>
       </div>
@@ -124,36 +134,38 @@ export default function TransactionForm({
       </div>
 
       <div className="md:col-span-2">
-        <div className="text-sm text-gray-600">
-          Ghi chú:{" "}
-          <span className="font-medium">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-xs text-blue-600 uppercase font-semibold mb-1">
+            Danh mục đã chọn
+          </p>
+          <p className="text-lg font-bold text-blue-900">
             {categories.find((c) => c.id === selectedCategory)?.name ??
-              "Chưa chọn danh mục"}
-          </span>
+              "⚠️ Chưa chọn danh mục"}
+          </p>
         </div>
       </div>
 
       <div className="md:col-span-2 flex items-center justify-between gap-4">
-        <div className="text-sm text-gray-500">
-          Ghi chú: Số tiền phải là số dương.
-        </div>
+        <div className="text-xs text-gray-500">ℹ️ Số tiền phải là số dương</div>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={onCreateWallet}
-            className="px-4 py-2 border rounded hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-gray-700 transition"
           >
-            Tạo ví mới
+            + Ví mới
           </button>
           <button
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className={`px-4 py-2 rounded text-white ${
-              loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+            className={`px-6 py-2 rounded-lg text-white font-medium transition ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 shadow-md"
             }`}
           >
-            {loading ? "Đang gửi..." : "Ghi giao dịch"}
+            {loading ? "⏳ Đang gửi..." : "✓ Ghi giao dịch"}
           </button>
         </div>
       </div>

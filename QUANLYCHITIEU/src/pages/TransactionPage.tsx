@@ -8,7 +8,6 @@ import type { WalletRequest } from "../type/WalletRequest";
 import type { ApiResponse } from "../type/ApiResponse";
 import type { Wallet } from "../type/Wallet";
 import type { TransactionRequest } from "../type/TransactionRequest";
-import CategorySelector from "../components/CategoriesSelect";
 import type { CategoryResponse } from "../type/CategoriesResponse";
 import { listCategories } from "../service/Categories";
 import type { Transaction } from "../type/Transaction";
@@ -24,6 +23,9 @@ export default function TransactionPage() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [catLoading, setCatLoading] = useState(false);
   const [catError, setCatError] = useState<string | null>(null);
+  const [transactionType, setTransactionType] = useState<"INCOME" | "EXPENSE">(
+    "EXPENSE"
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -32,7 +34,6 @@ export default function TransactionPage() {
       setCatLoading(true);
       setCatError(null);
       try {
-        // Nếu listCategories hỗ trợ signal, truyền controller.signal; nếu không, gọi như hiện tại
         const data = await listCategories();
         setCategories(data ?? []);
       } catch (err: unknown) {
@@ -58,6 +59,16 @@ export default function TransactionPage() {
     if (wallets.length && selectedWallet == null)
       setSelectedWallet(wallets[0].id);
   }, [wallets, selectedWallet]);
+
+  // Reset selectedCategory khi thay đổi loại giao dịch
+  useEffect(() => {
+    setSelectedCategory(null);
+  }, [transactionType]);
+
+  // Lọc danh mục theo loại giao dịch
+  const filteredCategories = categories.filter(
+    (cat) => cat.type === transactionType
+  );
 
   // handler tạo ví từ modal
   const handleCreateWallet = async (
@@ -91,7 +102,12 @@ export default function TransactionPage() {
         payload.categoryId = selectedCategory;
       }
 
-      const res = await createTransaction(payload);
+     
+      const { ...payloadWithoutType } = payload;
+
+      const res = await createTransaction(
+        payloadWithoutType as TransactionRequest
+      );
 
       return res;
     } catch (err: unknown) {
@@ -108,55 +124,122 @@ export default function TransactionPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-xl shadow p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">Tạo giao dịch mới</h2>
+    <div className="max-w-5xl mx-auto p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-800 mb-2">
+          Tạo giao dịch mới
+        </h1>
+        <p className="text-gray-600">
+          Ghi nhận chi tiêu hoặc doanh thu của bạn
+        </p>
+      </div>
 
-        {wloading ? (
-          <div>Đang tải ví...</div>
-        ) : werror ? (
-          <div className="text-red-500">
-            Lỗi: {werror}{" "}
-            <button onClick={reload} className="ml-2 underline">
-              Thử lại
-            </button>
+      {wloading ? (
+        <div className="bg-white rounded-xl shadow p-8 text-center">
+          <div className="inline-block">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
-        ) : wallets.length === 0 ? (
-          <div>
-            Chưa có ví.{" "}
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="ml-2 text-blue-600"
-            >
-              Tạo ví
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* TransactionForm được đặt ngay sau phần dropdown */}
-            <div className="mt-6">
+          <p className="mt-4 text-gray-600">Đang tải ví...</p>
+        </div>
+      ) : werror ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl shadow p-6">
+          <p className="text-red-700">Lỗi: {werror}</p>
+          <button
+            onClick={reload}
+            className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Thử lại
+          </button>
+        </div>
+      ) : wallets.length === 0 ? (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl shadow p-6">
+          <p className="text-blue-700 mb-3">
+            Chưa có ví nào. Hãy tạo ví để bắt đầu ghi giao dịch.
+          </p>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            + Tạo ví mới
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Form chính */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-xl shadow-lg p-8">
               <TransactionForm
                 wallets={wallets}
-                categories={categories}
+                categories={filteredCategories}
                 onCreateWallet={() => setShowCreateModal(true)}
                 onSubmit={handleSubmitTransaction}
                 selectedCategory={selectedCategory}
                 reload={reload}
-              />
-
-              {/* dùng component tách riêng */}
-              <CategorySelector
-                categories={categories}
-                selectedId={selectedCategory}
-                loading={catLoading}
-                error={catError}
-                onSelect={(id) => setSelectedCategory(id)}
-                onAddNew={() => console.log("")}
+                onTypeChange={setTransactionType}
               />
             </div>
-          </>
-        )}
-      </div>
+          </div>
+
+          {/* Sidebar - Chọn danh mục */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">
+                {transactionType === "EXPENSE"
+                  ? "💰 Danh mục chi tiêu"
+                  : "📈 Danh mục doanh thu"}
+              </h3>
+
+              {catLoading ? (
+                <div className="text-center py-6">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
+                </div>
+              ) : catError ? (
+                <p className="text-red-500 text-sm">{catError}</p>
+              ) : filteredCategories.length === 0 ? (
+                <p className="text-gray-500 text-sm">
+                  Không có danh mục cho loại giao dịch này
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {filteredCategories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-3 ${
+                        selectedCategory === cat.id
+                          ? "bg-blue-100 border-2 border-blue-500 text-blue-900"
+                          : "bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {cat.iconUrl ? (
+                        <img
+                          src={cat.iconUrl}
+                          alt={cat.name}
+                          className="w-5 h-5 object-contain"
+                        />
+                      ) : (
+                        <div className="w-5 h-5 bg-gray-300 rounded flex items-center justify-center text-xs">
+                          📁
+                        </div>
+                      )}
+                      <span
+                        className={
+                          selectedCategory === cat.id
+                            ? "font-bold"
+                            : "font-medium"
+                        }
+                      >
+                        {cat.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showCreateModal && (
         <CreateWalletModal
