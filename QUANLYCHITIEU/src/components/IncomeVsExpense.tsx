@@ -4,7 +4,7 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
- 
+  Legend,
 } from "recharts";
 import type { TransactionResponse } from "../type/TransactionResponse";
 
@@ -84,18 +84,6 @@ export default function IncomeVsExpense({
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, value, fill }) => (
-                      <text
-                        x="0"
-                        y="0"
-                        fill={fill}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                        className="font-semibold"
-                      >
-                        {`${name}: ${value.toLocaleString()}`}
-                      </text>
-                    )}
                     outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
@@ -112,6 +100,12 @@ export default function IncomeVsExpense({
                       backgroundColor: "#fff",
                       border: "1px solid #ccc",
                       borderRadius: "4px",
+                    }}
+                  />
+                  <Legend
+                    formatter={(value) => {
+                      const item = pieData.find((d) => d.name === value);
+                      return `${value}: ${item?.value?.toLocaleString() || 0}`;
                     }}
                   />
                 </PieChart>
@@ -162,7 +156,7 @@ export default function IncomeVsExpense({
                     Tháng
                   </th>
                   <th className="text-right py-2 px-3 text-gray-600 font-semibold">
-                    Doanh thu
+                    Thu nhập
                   </th>
                   <th className="text-right py-2 px-3 text-gray-600 font-semibold">
                     Chi tiêu
