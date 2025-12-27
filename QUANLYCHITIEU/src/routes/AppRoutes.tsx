@@ -9,78 +9,71 @@ import { WalletPage } from "../pages/WalletPage";
 import CategoryListPage from "../pages/ListCategoriesPage";
 import TransactionHistoryPage from "../pages/HistoryTransactionPage";
 import AddCategoryPage from "../pages/AddCategoryPage";
+import StatisticsPage from "../pages/StatisticsPage";
 
 function AppRoutes() {
   return (
     <Routes>
-  <Route
+      <Route
         path="/home"
         element={
-            <ClientLayout>
-          <Home/>
+          <ClientLayout>
+            <Home />
           </ClientLayout>
         }
       />
-       <Route
+      <Route
         path="/Wallets"
         element={
-            <ClientLayout>
-          <WalletPage/>
+          <ClientLayout>
+            <WalletPage />
           </ClientLayout>
         }
       />
       <Route
         path="/transactions"
         element={
-            <ClientLayout>
-          <TransactionPage/>
+          <ClientLayout>
+            <TransactionPage />
           </ClientLayout>
         }
       />
       <Route
         path="/categories"
         element={
-            <ClientLayout>
-          <CategoryListPage/>
+          <ClientLayout>
+            <CategoryListPage />
           </ClientLayout>
         }
       />
       <Route
         path="/history"
         element={
-            <ClientLayout>
-          <TransactionHistoryPage/>
+          <ClientLayout>
+            <TransactionHistoryPage />
           </ClientLayout>
         }
       />
-        <Route
+      <Route
         path="/createCategory"
         element={
-            <ClientLayout>
-          <AddCategoryPage/>
+          <ClientLayout>
+            <AddCategoryPage />
           </ClientLayout>
         }
       />
-        <Route
-        path="/"
+      <Route
+        path="/statistics"
         element={
-          <LandingPage/>
+          <ClientLayout>
+            <StatisticsPage />
+          </ClientLayout>
         }
       />
-       <Route
-        path="/login"
-        element={
-          <LoginPage/>
-        }
-      />
-       <Route
-        path="/register"
-        element={
-          <Register/>
-        }
-      />
-
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<Register />} />
     </Routes>
-  )
+  );
 }
 export default AppRoutes;

@@ -105,13 +105,13 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           >
             Ví
           </Link>
-           <Link
+          <Link
             to="/history"
             className="block py-2 px-3 rounded hover:bg-gray-200"
           >
             Lịch sử
           </Link>
-             <Link
+          <Link
             to="/categories"
             className="block py-2 px-3 rounded hover:bg-gray-200"
           >
@@ -119,7 +119,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           </Link>
 
           <Link
-            to="/reports"
+            to="/statistics"
             className="block py-2 px-3 rounded hover:bg-gray-200"
           >
             Thống kê
