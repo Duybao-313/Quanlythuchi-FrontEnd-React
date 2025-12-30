@@ -1,8 +1,6 @@
 import type { ApiResponse } from "../type/ApiResponse";
 import type { CategoryResponse } from "../type/CategoriesResponse";
-
-const API_BASE = "http://localhost:8080";
-const token = localStorage.getItem("token");
+import { API_CONFIG, getApiUrl, getHeaders } from "../config/apiConfig";
 
 async function handleResponse<T>(res: Response): Promise<T | null> {
   // res là Response từ fetch, có method json()
@@ -17,12 +15,9 @@ async function handleResponse<T>(res: Response): Promise<T | null> {
 }
 
 export async function listCategories(): Promise<CategoryResponse[]> {
-  const res = await fetch(`${API_BASE}/users/me/categories`, {
+  const res = await fetch(getApiUrl(API_CONFIG.CATEGORIES.BASE), {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+    headers: getHeaders(true),
   });
 
   const data = await handleResponse<CategoryResponse[]>(res);
@@ -30,13 +25,13 @@ export async function listCategories(): Promise<CategoryResponse[]> {
 }
 
 export async function deleteCategory(categoryId: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/users/me/categories/${categoryId}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
+  const res = await fetch(
+    getApiUrl(`${API_CONFIG.CATEGORIES.BASE}/${categoryId}`),
+    {
+      method: "DELETE",
+      headers: getHeaders(true),
+    }
+  );
 
   if (!res.ok) {
     const json = (await res

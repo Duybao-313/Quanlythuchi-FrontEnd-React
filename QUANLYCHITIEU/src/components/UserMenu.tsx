@@ -1,37 +1,59 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useUser } from "../hooks/useUser";
 
 export default function UserMenu() {
   const [open, setOpen] = useState(false);
-  const isLoggedIn = false; // giả sử chưa đăng nhập
+  const { user } = useUser();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   return (
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center space-x-2 focus:outline-none"
+        className="flex items-center space-x-2 focus:outline-none hover:opacity-80 transition-opacity"
       >
-        <img src="/avatar.png" alt="User" className="w-8 h-8 rounded-full border" />
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold overflow-hidden">
+          {user?.fullName
+            ? user.fullName
+                .split(" ")
+                .map((n) => n.charAt(0).toUpperCase())
+                .join("")
+            : user?.username.charAt(0).toUpperCase()}
+        </div>
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded z-50">
-          {!isLoggedIn ? (
+        <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded z-50">
+          {user ? (
             <>
-              <a href="/login" className="block px-4 py-2 text-sm hover:bg-gray-100">
-                Đăng nhập
-              </a>
-              <a href="/register" className="block px-4 py-2 text-sm hover:bg-gray-100">
-                Đăng ký
-              </a>
+              <Link
+                to="/account"
+                onClick={handleClose}
+                className="block px-4 py-2 text-sm hover:bg-gray-100 border-b"
+              >
+                Tài khoản của tôi
+              </Link>
             </>
           ) : (
             <>
-              <a href="/profile" className="block px-4 py-2 text-sm hover:bg-gray-100">
-                Hồ sơ
-              </a>
-              <a href="/logout" className="block px-4 py-2 text-sm hover:bg-gray-100">
-                Đăng xuất
-              </a>
+              <Link
+                to="/login"
+                onClick={handleClose}
+                className="block px-4 py-2 text-sm hover:bg-gray-100"
+              >
+                Đăng nhập
+              </Link>
+              <Link
+                to="/register"
+                onClick={handleClose}
+                className="block px-4 py-2 text-sm hover:bg-gray-100"
+              >
+                Đăng ký
+              </Link>
             </>
           )}
         </div>

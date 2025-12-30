@@ -2,18 +2,15 @@ import type { Transaction } from "../type/Transaction";
 import type { ApiResponse } from "../type/ApiResponse";
 import type { TransactionRequest } from "../type/TransactionRequest";
 import type { TransactionResponse } from "../type/TransactionResponse";
+import { API_CONFIG, getApiUrl, getHeaders } from "../config/apiConfig";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-
-export async function createTransaction(req: TransactionRequest): Promise<ApiResponse<Transaction>> {
+export async function createTransaction(
+  req: TransactionRequest
+): Promise<ApiResponse<Transaction>> {
   try {
-    const res = await fetch(`${API_BASE}/transactions`, {
+    const res = await fetch(getApiUrl(API_CONFIG.TRANSACTIONS.CREATE), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: localStorage.getItem("token")
-        ? `Bearer ${localStorage.getItem("token")}` : "",
-      },
+      headers: getHeaders(true),
       body: JSON.stringify(req),
     });
 
@@ -47,13 +44,11 @@ export async function createTransaction(req: TransactionRequest): Promise<ApiRes
     };
   }
 }
+
 export async function fetchTransactions(
   params?: Record<string, unknown>,
   init?: RequestInit
 ): Promise<TransactionResponse[]> {
-  const token = localStorage.getItem("token") ?? "";
-
-
   const toDateOnly = (d: Date) => {
     const pad = (n: number) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -81,20 +76,19 @@ export async function fetchTransactions(
           .join("&")
       : "";
 
-  const url = `${API_BASE}/transactions/user${qs}`;
-console.log("Fetching transactions from URL:", url);
+  const url = `${getApiUrl(API_CONFIG.TRANSACTIONS.BASE)}/user${qs}`;
+  console.log("Fetching transactions from URL:", url);
   let response: Response;
   try {
     response = await fetch(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers: getHeaders(true),
       ...init,
     });
   } catch (err) {
-    throw new Error(err instanceof Error ? err.message : "Không thể kết nối tới server");
+    throw new Error(
+      err instanceof Error ? err.message : "Không thể kết nối tới server"
+    );
   }
 
   const text = await response.text();
@@ -127,15 +121,22 @@ console.log("Fetching transactions from URL:", url);
     const api = parsed as ApiResponse<unknown>;
     if (!api.success) {
       const msg =
-        typeof (api as unknown as Record<string, unknown>)["message"] === "string"
+        typeof (api as unknown as Record<string, unknown>)["message"] ===
+        "string"
           ? String((api as unknown as Record<string, unknown>)["message"])
           : "Lỗi tải giao dịch";
       throw new Error(msg);
     }
     const data = api.data;
     if (Array.isArray(data)) return data as TransactionResponse[];
-    if (data && typeof data === "object" && Array.isArray((data as Record<string, unknown>)["items"])) {
-      return (data as Record<string, unknown>)["items"] as TransactionResponse[];
+    if (
+      data &&
+      typeof data === "object" &&
+      Array.isArray((data as Record<string, unknown>)["items"])
+    ) {
+      return (data as Record<string, unknown>)[
+        "items"
+      ] as TransactionResponse[];
     }
     return [];
   }

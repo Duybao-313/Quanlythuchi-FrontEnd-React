@@ -4,8 +4,12 @@ import type { ApiResponse } from "../type/ApiResponse";
 import type { Wallet } from "../type/Wallet";
 import type { WalletRequest } from "../type/WalletRequest";
 import type { WalletResponse } from "../type/WalletResponse";
-
-const API_BASE = "http://localhost:8080";
+import {
+  API_CONFIG,
+  getApiUrl,
+  getAuthToken,
+  getHeaders,
+} from "../config/apiConfig";
 
 export interface WalletOverview {
   totalBalance: number;
@@ -18,14 +22,9 @@ export interface WalletOverview {
 }
 
 export async function fetchWallets(): Promise<ApiResponse<Wallet[]>> {
-  const res = await fetch(`${API_BASE}/wallets`, {
+  const res = await fetch(getApiUrl(API_CONFIG.WALLETS.BASE), {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: localStorage.getItem("token")
-        ? `Bearer ${localStorage.getItem("token")}`
-        : "",
-    },
+    headers: getHeaders(true),
   });
 
   if (!res.ok) {
@@ -42,9 +41,7 @@ export async function fetchWalletOverview(
   startDate?: string,
   endDate?: string
 ): Promise<ApiResponse<WalletOverview>> {
-  const token = localStorage.getItem("token") ?? "";
-
-  let url = `${API_BASE}/wallets/overview`;
+  let url = getApiUrl(API_CONFIG.WALLETS.OVERVIEW);
 
   // Thêm query parameters nếu có date
   if (startDate && endDate) {
@@ -53,13 +50,10 @@ export async function fetchWalletOverview(
     params.append("endDate", endDate);
     url += `?${params.toString()}`;
   }
-console.log ("Fetching wallet overview from URL:", url);
+  console.log("Fetching wallet overview from URL:", url);
   const res = await fetch(url, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
-    },
+    headers: getHeaders(true),
   });
 
   if (!res.ok) {
@@ -75,7 +69,7 @@ export async function createWallet(
   req: WalletRequest,
   file?: File | null
 ): Promise<ApiResponse<Wallet>> {
-  const token = localStorage.getItem("token") ?? "";
+  const token = getAuthToken();
 
   // Sử dụng FormData như tạo danh mục
   const form = new FormData();
@@ -88,10 +82,10 @@ export async function createWallet(
 
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}/wallets`, {
+    res = await fetch(getApiUrl(API_CONFIG.WALLETS.CREATE), {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: token ? `Bearer ${token}` : "",
       },
       body: form,
     });
@@ -128,15 +122,13 @@ export async function deleteWallet(
   walletId: number | string
 ): Promise<ApiResponse<WalletResponse>> {
   console.log(walletId);
-  const res = await fetch(`${API_BASE}/wallets/${walletId}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: localStorage.getItem("token")
-        ? `Bearer ${localStorage.getItem("token")}`
-        : "",
-    },
-  });
+  const res = await fetch(
+    getApiUrl(`${API_CONFIG.WALLETS.DELETE}/${walletId}`),
+    {
+      method: "DELETE",
+      headers: getHeaders(true),
+    }
+  );
   const json = await res.json().catch(() => {
     throw new Error(`Invalid JSON response (status ${res.status})`);
   });

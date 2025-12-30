@@ -10,6 +10,7 @@ import CategoryListPage from "../pages/ListCategoriesPage";
 import TransactionHistoryPage from "../pages/HistoryTransactionPage";
 import AddCategoryPage from "../pages/AddCategoryPage";
 import StatisticsPage from "../pages/StatisticsPage";
+import AccountPage from "../pages/AccountPage";
 
 function AppRoutes() {
   return (
@@ -67,6 +68,14 @@ function AppRoutes() {
         element={
           <ClientLayout>
             <StatisticsPage />
+          </ClientLayout>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <ClientLayout>
+            <AccountPage />
           </ClientLayout>
         }
       />

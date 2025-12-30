@@ -64,20 +64,20 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           </Link>
         </div>
 
-        {/* Hiển thị fullname ở đầu sidebar */}
+        {/* Hiển thị fullName ở đầu sidebar */}
         <div className="px-6 pb-4">
           {loading ? (
             <div className="text-sm text-gray-500">Đang tải...</div>
           ) : user ? (
             <div className="flex items-center gap-3 py-2">
               <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
-                {user.fullname
-                  ? user.fullname.charAt(0).toUpperCase()
+                {user.fullName
+                  ? user.fullName.charAt(0).toUpperCase()
                   : user.username.charAt(0).toUpperCase()}
               </div>
               <div>
                 <div className="text-sm font-medium">
-                  {user.fullname ?? user.username}
+                  {user.fullName ?? user.username}
                 </div>
                 <div className="text-xs text-gray-500">
                   {user.role ?? "Người dùng"}
@@ -125,7 +125,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
             Thống kê
           </Link>
           <Link
-            to="/accounts"
+            to="/account"
             className="block py-2 px-3 rounded hover:bg-gray-200"
           >
             Tài khoản

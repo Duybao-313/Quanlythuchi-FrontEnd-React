@@ -1,33 +1,33 @@
+import { API_CONFIG, getApiUrl, getHeaders } from "../config/apiConfig";
+
 export async function login(username: string, password: string) {
-  const response = await fetch("http://localhost:8080/auth/login", {
+  const response = await fetch(getApiUrl(API_CONFIG.AUTH.LOGIN), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getHeaders(false),
     body: JSON.stringify({ username, password }),
   });
 
   return await response.json();
 }
+
 export async function register(
   email: string,
   username: string,
+  fullName: string,
   password: string
 ) {
-  const response = await fetch("http://localhost:8080/auth/register", {
+  const response = await fetch(getApiUrl(API_CONFIG.AUTH.REGISTER), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, username, password }),
+    headers: getHeaders(false),
+    body: JSON.stringify({ email, username, fullName, password }),
   });
   return await response.json();
 }
-export async function getProfile() {
-  const token = localStorage.getItem("token");
-  const response = await fetch("http://localhost:8080/auth/userdetail", {
-    method: "GET",
 
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-      "Content-Type": "application/json",
-    },
+export async function getProfile() {
+  const response = await fetch(getApiUrl(API_CONFIG.AUTH.USER_DETAIL), {
+    method: "GET",
+    headers: getHeaders(true),
   });
   return await response.json();
 }
