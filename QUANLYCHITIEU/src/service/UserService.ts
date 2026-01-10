@@ -155,3 +155,45 @@ export async function createCategoryForMe(
   // Nếu backend trả đúng ApiResponse<CategoryResponse>
   return parsed as ApiResponse<CategoryResponse>;
 }
+
+export async function uploadAvatar(file: File): Promise<ApiResponse<UserDTO>> {
+  const token = getAuthToken();
+
+  const form = new FormData();
+  form.append("file", file);
+
+  let res: Response;
+  try {
+    res = await fetch(getApiUrl(API_CONFIG.USERS.UPLOAD_AVATAR), {
+      method: "POST",
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+      body: form,
+    });
+  } catch (networkErr) {
+    console.error(networkErr);
+    throw new Error(
+      "Không thể kết nối tới server. Vui lòng kiểm tra mạng hoặc thử lại sau."
+    );
+  }
+
+  const text = await res.text();
+  let parsed: unknown = null;
+  try {
+    parsed = text ? JSON.parse(text) : null;
+  } catch {
+    throw new Error(
+      `Server trả về dữ liệu không hợp lệ (status ${res.status}).`
+    );
+  }
+
+  if (!res.ok) {
+    const err =
+      parsed && typeof parsed === "object" ? (parsed as ErrorResponse) : null;
+    const msg = err?.message ?? `Request failed with status ${res.status}`;
+    throw new Error(msg);
+  }
+
+  return parsed as ApiResponse<UserDTO>;
+}

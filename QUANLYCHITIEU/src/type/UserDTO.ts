@@ -8,5 +8,5 @@ export interface UserDTO {
   address?: string;
   role?: string;
   created_at?: string;
-  avatar?: string;
+  avatarUrl?: string;
 }

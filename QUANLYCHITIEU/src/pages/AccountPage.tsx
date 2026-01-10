@@ -23,10 +23,10 @@ export default function AccountPage() {
     );
   }
 
-  const handleAvatarChange = (avatar: string) => {
+  const handleAvatarChange = (avatarUrl: string) => {
     setUser({
       ...user,
-      avatar,
+      avatarUrl,
     });
   };
 

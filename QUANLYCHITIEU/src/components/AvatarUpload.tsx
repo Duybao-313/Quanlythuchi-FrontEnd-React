@@ -1,5 +1,8 @@
 import { useState, useRef } from "react";
 import type { UserDTO } from "../type/UserDTO";
+import { uploadAvatar } from "../service/UserService";
+import { API_CONFIG } from "../config/apiConfig";
+import { toast } from "react-toastify";
 
 interface AvatarUploadProps {
   user: UserDTO;
@@ -44,38 +47,48 @@ export default function AvatarUpload({
     // Upload avatar
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("file", file);
+      const response = await uploadAvatar(file);
 
-      const response = await fetch("http://localhost:8080/users/avatar", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      if (response.success=== true && response.data?.avatarUrl) {
+        // Build full URL if needed
+        const fullUrl = response.data.avatarUrl.startsWith("http")
+          ? response.data.avatarUrl
+          : `${API_CONFIG.BASE_URL}${response.data.avatarUrl}`;
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.data?.avatar) {
-          onAvatarChange?.(data.data.avatar);
-        }
-        // Keep preview until API confirms
+        onAvatarChange?.(fullUrl);
+        setAvatarPreview(null); // Clear preview, use actual URL from server
+        toast.success("Cập nhật ảnh đại diện thành công!");
       } else {
-        alert("Lỗi khi tải lên hình ảnh");
+        toast.error(
+          "Lỗi khi tải lên hình ảnh: " + (response.message || "Unknown error")
+        );
         setAvatarPreview(null);
       }
     } catch (error) {
       console.error("Error uploading avatar:", error);
-      alert("Lỗi khi tải lên hình ảnh");
+      toast.error(
+        "Lỗi khi tải lên hình ảnh: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
       setAvatarPreview(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const avatarUrl = avatarPreview || user.avatar || null;
+  const getAvatarUrl = (): string | null => {
+    if (avatarPreview) return avatarPreview;
+
+    if (user.avatarUrl) {
+      return user.avatarUrl.startsWith("http")
+        ? user.avatarUrl
+        : `${API_CONFIG.BASE_URL}${user.avatarUrl}`;
+    }
+
+    return null;
+  };
+
+  const avatarUrl = getAvatarUrl();
   const initials = user.fullName
     ? user.fullName
         .split(" ")
@@ -89,15 +102,27 @@ export default function AvatarUpload({
         onClick={handleAvatarClick}
         className="cursor-pointer relative group mb-6"
       >
-        <div className="w-40 h-40 rounded-full bg-gradient-to-br from-white to-gray-100 flex items-center justify-center text-indigo-600 text-6xl font-bold overflow-hidden shadow-2xl border-4 border-white">
+        {/* Background container - only show if no image */}
+        {!avatarUrl && (
+          <div className="absolute inset-0 w-40 h-40 rounded-full bg-gradient-to-br from-white to-gray-100 shadow-2xl border-4 border-white" />
+        )}
+
+        {/* Image and text container */}
+        <div className="w-40 h-40 rounded-full flex items-center justify-center text-indigo-600 text-6xl font-bold overflow-hidden shadow-2xl border-4 border-white relative z-10">
           {avatarUrl ? (
             <img
               src={avatarUrl}
               alt="Avatar"
               className="w-full h-full object-cover"
+              onError={(e) => {
+                console.error("Image failed to load:", avatarUrl);
+                e.currentTarget.style.display = "none";
+              }}
             />
           ) : (
-            <span>{initials}</span>
+            <span className="bg-gradient-to-br from-white to-gray-100 w-full h-full flex items-center justify-center">
+              {initials}
+            </span>
           )}
         </div>
 
