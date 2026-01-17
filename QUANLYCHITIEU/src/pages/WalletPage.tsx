@@ -29,12 +29,18 @@ export const WalletPage = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Quản lý ví</h1>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            Quản lý ví
+          </h1>
+          <p className="text-gray-500 mt-1">Theo dõi và quản lý các ví của bạn</p>
+        </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+          className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 font-medium"
         >
           <svg
             className="w-5 h-5"
@@ -53,7 +59,10 @@ export const WalletPage = () => {
         </button>
       </div>
 
-      <WalletList key={reloadTrigger} />
+      {/* Wallet List */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <WalletList key={reloadTrigger} />
+      </div>
 
       {showCreateModal && (
         <CreateWalletModal

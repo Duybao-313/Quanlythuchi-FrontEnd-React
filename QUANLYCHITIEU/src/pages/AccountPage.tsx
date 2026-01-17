@@ -79,23 +79,28 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-12">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
             Tài khoản của tôi
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-500 text-lg">
             Quản lý thông tin cá nhân và bảo mật tài khoản
           </p>
         </div>
 
         {/* Main Content Card */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
           {/* Avatar Section */}
-          <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 py-12">
-            <AvatarUpload user={user} onAvatarChange={handleAvatarChange} />
+          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 py-12 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="relative">
+              <AvatarUpload user={user} onAvatarChange={handleAvatarChange} />
+            </div>
           </div>
 
           {/* User Info and Actions Section */}

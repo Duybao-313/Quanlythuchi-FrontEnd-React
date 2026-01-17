@@ -90,21 +90,21 @@ export default function WalletDropdown({
         onKeyDown={onKeyDown}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="inline-flex items-center gap-2 px-3 py-2 border rounded shadow-sm bg-white hover:bg-gray-50"
+        className="inline-flex items-center gap-3 px-4 py-3 border border-gray-200 rounded-xl shadow-sm bg-white hover:bg-gray-50 hover:border-gray-300 transition-all"
       >
-        <span className="w-6 h-6 flex items-center justify-center rounded bg-blue-100 text-blue-700 font-semibold">💼</span>
+        <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100">
+          <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+        </div>
         <div className="text-left">
-          <div className="text-sm font-medium">{selected ? selected.name : placeholder}</div>
+          <div className="text-sm font-semibold text-gray-900">{selected ? selected.name : placeholder}</div>
           <div className="text-xs text-gray-500">
-            {selected ? `${selected.balance.toLocaleString()} ${selected.type}` : "Chọn ví để ghi giao dịch"}
+            {selected ? `${selected.balance.toLocaleString()} đ` : "Chọn ví để ghi giao dịch"}
           </div>
         </div>
-        <svg className="ml-2 h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path
-            fillRule="evenodd"
-            d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
-            clipRule="evenodd"
-          />
+        <svg className={`ml-2 h-5 w-5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
@@ -112,7 +112,7 @@ export default function WalletDropdown({
         <ul
           role="listbox"
           tabIndex={-1}
-          className="absolute z-50 mt-2 w-64 bg-white border rounded shadow-lg max-h-60 overflow-auto"
+          className="absolute z-50 mt-2 w-72 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl shadow-xl max-h-72 overflow-auto"
           onKeyDown={onKeyDown}
         >
           {wallets.map((w, idx) => {
@@ -128,30 +128,44 @@ export default function WalletDropdown({
                   onChange(w.id);
                   closeDropdown();
                 }}
-                className={`px-3 py-2 cursor-pointer flex items-center justify-between ${isHighlighted ? "bg-blue-50" : ""} ${
-                  isSelected ? "font-semibold" : "text-gray-700"
-                }`}
+                className={`px-4 py-3 cursor-pointer flex items-center gap-3 transition-colors ${
+                  isHighlighted ? "bg-indigo-50" : "hover:bg-gray-50"
+                } ${isSelected ? "bg-indigo-50" : ""}`}
               >
-                <div>
-                  <div className="text-sm">{w.name}</div>
+                <div className={`w-9 h-9 flex items-center justify-center rounded-lg ${
+                  isSelected ? "bg-indigo-100" : "bg-gray-100"
+                }`}>
+                  <svg className={`w-4 h-4 ${isSelected ? "text-indigo-600" : "text-gray-500"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className={`text-sm font-medium ${isSelected ? "text-indigo-700" : "text-gray-900"}`}>{w.name}</div>
                   <div className="text-xs text-gray-500">
-                    {w.balance.toLocaleString()} {w.type}
+                    {w.balance.toLocaleString()} đ
                   </div>
                 </div>
-                {isSelected && <span className="text-blue-600 text-sm">Đã chọn</span>}
+                {isSelected && (
+                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
               </li>
             );
           })}
 
-          <li className="border-t px-3 py-2">
+          <li className="border-t border-gray-100 px-4 py-3">
             <button
               onClick={() => {
                 closeDropdown();
                 onCreateClick?.();
               }}
-              className="w-full text-left text-sm text-blue-600 hover:underline"
+              className="w-full flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
             >
-              + Tạo ví mới
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Tạo ví mới
             </button>
           </li>
         </ul>

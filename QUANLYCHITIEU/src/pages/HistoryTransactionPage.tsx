@@ -190,7 +190,7 @@ export default function TransactionHistoryPage(): JSX.Element {
   ]);
 
   return (
-    <div className="max-w-7xl mx-auto bg-gray-50 text-gray-900">
+    <div className="max-w-7xl mx-auto space-y-6">
       <HistoryHeader
         selectedWallet={selectedWallet}
         filter={filter}
@@ -200,7 +200,7 @@ export default function TransactionHistoryPage(): JSX.Element {
         onReloadWallets={reloadWallets}
       />
 
-      <main className="w-full px-6 py-6">
+      <main className="w-full space-y-6">
         <DateRangeWithCategory
           dateRangeType={dateRangeType}
           displayRange={displayRange}
