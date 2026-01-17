@@ -5,7 +5,9 @@ import AvatarUpload from "../components/AvatarUpload";
 import UserInfoSection from "../components/UserInfoSection";
 import EditProfileModal from "../components/EditProfileModal";
 import ChangePasswordModal from "../components/ChangePasswordModal";
-import { updateUserInfo, changePassword } from "../service/UserService";
+import { updateUserInfo } from "../service/UserService";
+import { changePassword } from "../service/AuthService";
+import { toast } from "react-toastify";
 
 export default function AccountPage() {
   const { user, setUser } = useUser();
@@ -49,19 +51,30 @@ export default function AccountPage() {
     oldPassword: string,
     newPassword: string
   ) => {
-    const response = await changePassword({
-      oldPassword,
-      newPassword,
-    });
+    try {
+      const response = await changePassword({
+        oldPass: oldPassword,
+        newPass1: newPassword,
+        newPass2: newPassword,
+      });
 
-    if (!response.success) {
-      throw new Error(response.message || "Lỗi khi đổi mật khẩu");
+      if (response.success) {
+        toast.success(response.message || "Đổi mật khẩu thành công!");
+      } else {
+        console.log(response);
+        toast.error(response.message || "Lỗi khi đổi mật khẩu");
+      }
+    } catch (error) {
+      toast.error(
+        "Không thể kết nối tới server. Vui lòng thử lại sau." + error
+      );
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUser(null);
+    toast.info("Đã đăng xuất");
     navigate("/login");
   };
 

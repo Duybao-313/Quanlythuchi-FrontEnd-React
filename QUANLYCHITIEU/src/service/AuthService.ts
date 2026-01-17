@@ -37,6 +37,21 @@ export interface RefreshTokenResponse {
   expiryDate: string;
 }
 
+export interface ChangePasswordRequest {
+  oldPass: string;
+  newPass1: string;
+  newPass2: string;
+}
+
+export async function changePassword(request: ChangePasswordRequest) {
+  const response = await fetch(getApiUrl(API_CONFIG.AUTH.CHANGE_PASSWORD), {
+    method: "POST",
+    headers: getHeaders(true),
+    body: JSON.stringify(request),
+  });
+  return await response.json();
+}
+
 export async function refreshToken(token: string) {
   const response = await fetch(getApiUrl(API_CONFIG.AUTH.REFRESH), {
     method: "POST",

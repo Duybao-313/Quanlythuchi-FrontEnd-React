@@ -9,10 +9,7 @@ interface AvatarUploadProps {
   onAvatarChange?: (avatar: string) => void;
 }
 
-export default function AvatarUpload({
-  user,
-
-}: AvatarUploadProps) {
+export default function AvatarUpload({ user }: AvatarUploadProps) {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,27 +33,25 @@ export default function AvatarUpload({
       return;
     }
 
-    // Create preview
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setAvatarPreview(result);
-    };
-    reader.readAsDataURL(file);
-
-    // Upload avatar
+    // Upload avatar trước, chỉ hiển thị preview khi thành công
     setIsLoading(true);
     try {
       const response = await uploadAvatar(file);
 
-      if (response.success=== true ) {
-      
+      if (response.success === true) {
+        // Chỉ hiển thị preview sau khi upload thành công
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result as string;
+          setAvatarPreview(result);
+        };
+        reader.readAsDataURL(file);
+
         toast.success("Cập nhật ảnh đại diện thành công!");
       } else {
         toast.error(
           "Lỗi khi tải lên hình ảnh: " + (response.message || "Unknown error")
         );
-        setAvatarPreview(null);
       }
     } catch (error) {
       console.error("Error uploading avatar:", error);
@@ -64,7 +59,6 @@ export default function AvatarUpload({
         "Lỗi khi tải lên hình ảnh: " +
           (error instanceof Error ? error.message : "Unknown error")
       );
-      setAvatarPreview(null);
     } finally {
       setIsLoading(false);
     }

@@ -11,6 +11,7 @@ export const API_CONFIG = {
     REGISTER: "/auth/register",
     USER_DETAIL: "/auth/userdetail",
     REFRESH: "/auth/refresh",
+    CHANGE_PASSWORD: "/auth/change-password",
   },
   USERS: {
     BASE: "/users",
