@@ -93,18 +93,44 @@ export default function WalletDropdown({
         className="inline-flex items-center gap-3 px-4 py-3 border border-gray-200 rounded-xl shadow-sm bg-white hover:bg-gray-50 hover:border-gray-300 transition-all"
       >
         <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100">
-          <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          <svg
+            className="w-5 h-5 text-indigo-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+            />
           </svg>
         </div>
         <div className="text-left">
-          <div className="text-sm font-semibold text-gray-900">{selected ? selected.name : placeholder}</div>
+          <div className="text-sm font-semibold text-gray-900">
+            {selected ? selected.name : placeholder}
+          </div>
           <div className="text-xs text-gray-500">
-            {selected ? `${selected.balance.toLocaleString()} đ` : "Chọn ví để ghi giao dịch"}
+            {selected
+              ? `${selected.balance.toLocaleString()} đ`
+              : "Chọn ví để ghi giao dịch"}
           </div>
         </div>
-        <svg className={`ml-2 h-5 w-5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        <svg
+          className={`ml-2 h-5 w-5 text-gray-400 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 
@@ -132,22 +158,52 @@ export default function WalletDropdown({
                   isHighlighted ? "bg-indigo-50" : "hover:bg-gray-50"
                 } ${isSelected ? "bg-indigo-50" : ""}`}
               >
-                <div className={`w-9 h-9 flex items-center justify-center rounded-lg ${
-                  isSelected ? "bg-indigo-100" : "bg-gray-100"
-                }`}>
-                  <svg className={`w-4 h-4 ${isSelected ? "text-indigo-600" : "text-gray-500"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                <div
+                  className={`w-9 h-9 flex items-center justify-center rounded-lg ${
+                    isSelected ? "bg-indigo-100" : "bg-gray-100"
+                  }`}
+                >
+                  <svg
+                    className={`w-4 h-4 ${
+                      isSelected ? "text-indigo-600" : "text-gray-500"
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <div className={`text-sm font-medium ${isSelected ? "text-indigo-700" : "text-gray-900"}`}>{w.name}</div>
+                  <div
+                    className={`text-sm font-medium ${
+                      isSelected ? "text-indigo-700" : "text-gray-900"
+                    }`}
+                  >
+                    {w.name}
+                  </div>
                   <div className="text-xs text-gray-500">
                     {w.balance.toLocaleString()} đ
                   </div>
                 </div>
                 {isSelected && (
-                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-5 h-5 text-indigo-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 )}
               </li>
@@ -162,8 +218,18 @@ export default function WalletDropdown({
               }}
               className="w-full flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
               </svg>
               Tạo ví mới
             </button>

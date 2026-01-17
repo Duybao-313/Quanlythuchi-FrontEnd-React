@@ -36,7 +36,9 @@ export const WalletPage = () => {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             Quản lý ví
           </h1>
-          <p className="text-gray-500 mt-1">Theo dõi và quản lý các ví của bạn</p>
+          <p className="text-gray-500 mt-1">
+            Theo dõi và quản lý các ví của bạn
+          </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
