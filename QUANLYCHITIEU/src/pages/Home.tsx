@@ -32,16 +32,8 @@ export const Home = () => {
           setOverview(overviewRes.data);
         }
 
-        // Lấy giao dịch 7 ngày gần nhất
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-        const year = sevenDaysAgo.getFullYear();
-        const month = String(sevenDaysAgo.getMonth() + 1).padStart(2, "0");
-        const day = String(sevenDaysAgo.getDate()).padStart(2, "0");
-        const startDate = `${year}-${month}-${day}`;
-
-        const transRes = await fetchTransactions({ startDate });
+        // Lấy tất cả giao dịch
+        const transRes = await fetchTransactions({});
         if (transRes && Array.isArray(transRes)) {
           setTransactions(transRes);
         }
@@ -96,7 +88,7 @@ export const Home = () => {
   const expenseCount = overview?.expenseCount ?? 0;
   const incomeCount = overview?.incomeCount ?? 0;
 
-  // Giao dịch gần đây từ API (7 ngày), sắp xếp mới nhất trước
+  // Giao dịch gần đây từ API, sắp xếp mới nhất trước, lấy top 10
   const recentTransactions = transactions
     .sort(
       (a, b) =>

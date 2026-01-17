@@ -156,7 +156,7 @@ export async function createCategoryForMe(
   return parsed as ApiResponse<CategoryResponse>;
 }
 
-export async function uploadAvatar(file: File): Promise<ApiResponse<UserDTO>> {
+export async function uploadAvatar(file: File): Promise<ApiResponse<string>> {
   const token = getAuthToken();
 
   const form = new FormData();
@@ -195,5 +195,5 @@ export async function uploadAvatar(file: File): Promise<ApiResponse<UserDTO>> {
     throw new Error(msg);
   }
 
-  return parsed as ApiResponse<UserDTO>;
+  return parsed as ApiResponse<string>;
 }

@@ -1,8 +1,8 @@
 // src/layouts/ClientLayout.tsx
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import UserMenu from "../components/UserMenu";
 import { useNavigate, Link } from "react-router-dom";
-import { getProfile } from "../service/AuthService";
+import { getProfile, refreshToken } from "../service/AuthService";
 import { useUser } from "../hooks/useUser";
 
 type ClientLayoutProps = {
@@ -13,6 +13,12 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const { user, setUser } = useUser();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem("token");
+    setUser(null);
+    navigate("/login");
+  }, [setUser, navigate]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -28,17 +34,30 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         const res = await getProfile();
         if (res.success && res.data) {
           setUser(res.data);
+        } else if (res.code === 1007 || res.code === "1007") {
+          // Token hết hạn hoặc không có quyền -> thử refresh token
+          const refreshRes = await refreshToken(token);
+          if (refreshRes.success && refreshRes.data) {
+            // Refresh thành công -> lưu token mới và gọi lại getProfile
+            localStorage.setItem("token", refreshRes.data.token);
+            const newProfileRes = await getProfile();
+            if (newProfileRes.success && newProfileRes.data) {
+              setUser(newProfileRes.data);
+            } else {
+              // Vẫn thất bại sau khi refresh -> logout
+              handleLogout();
+            }
+          } else {
+            // Refresh thất bại -> logout
+            handleLogout();
+          }
         } else {
-          // token không hợp lệ hoặc lỗi -> xoá token và chuyển login
-          localStorage.removeItem("token");
-          setUser(null);
-          navigate("/login");
+          // Lỗi khác -> logout
+          handleLogout();
         }
       } catch (e) {
         // lỗi mạng -> giữ user null, chuyển login
-        localStorage.removeItem("token");
-        setUser(null);
-        navigate("/login");
+        handleLogout();
         console.log(e);
       } finally {
         setLoading(false);
@@ -46,7 +65,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     };
 
     fetchProfile();
-  }, [setUser, navigate]);
+  }, [setUser, navigate, handleLogout]);
 
   return (
     <div className="flex min-h-screen bg-gray-100">

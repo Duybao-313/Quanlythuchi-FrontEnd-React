@@ -11,7 +11,7 @@ interface AvatarUploadProps {
 
 export default function AvatarUpload({
   user,
-  onAvatarChange,
+
 }: AvatarUploadProps) {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,14 +49,8 @@ export default function AvatarUpload({
     try {
       const response = await uploadAvatar(file);
 
-      if (response.success=== true && response.data?.avatarUrl) {
-        // Build full URL if needed
-        const fullUrl = response.data.avatarUrl.startsWith("http")
-          ? response.data.avatarUrl
-          : `${API_CONFIG.BASE_URL}${response.data.avatarUrl}`;
-
-        onAvatarChange?.(fullUrl);
-        setAvatarPreview(null); // Clear preview, use actual URL from server
+      if (response.success=== true ) {
+      
         toast.success("Cập nhật ảnh đại diện thành công!");
       } else {
         toast.error(
