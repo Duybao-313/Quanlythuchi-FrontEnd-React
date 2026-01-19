@@ -301,7 +301,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                     {user.fullName ?? user.username}
                   </div>
                   <div className="text-xs text-indigo-600 font-medium">
-                    {user.role ?? "Người dùng"}
+                    {user.role?.name ?? "Người dùng"}
                   </div>
                 </div>
               )}
@@ -384,7 +384,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           </div>
           <div className="flex items-center gap-4">
             {/* Admin Button - chỉ hiện nếu user có role ROLE_ADMIN */}
-            {user?.role === "ROLE_ADMIN" && (
+            {user?.role?.name === "ROLE_ADMIN" && (
               <Link
                 to="/admin"
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-orange-500 text-white font-medium text-sm hover:from-red-600 hover:to-orange-600 transition-all shadow-lg shadow-red-500/30"

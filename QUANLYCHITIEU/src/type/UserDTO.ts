@@ -1,4 +1,9 @@
 // src/types/user.ts
+export interface UserRole {
+  id: number;
+  name: string;
+}
+
 export interface UserDTO {
   id: number;
   username: string;
@@ -6,7 +11,7 @@ export interface UserDTO {
   email?: string;
   phone?: string;
   address?: string;
-  role?: string;
+  role?: UserRole;
   created_at?: string;
   avatarUrl?: string;
 }

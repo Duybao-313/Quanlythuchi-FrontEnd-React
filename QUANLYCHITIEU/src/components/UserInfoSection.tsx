@@ -230,7 +230,7 @@ export default function UserInfoSection({
                 </svg>
               }
               label="Vai trò"
-              value={user.role}
+              value={user.role?.name}
             />
           )}
         </div>

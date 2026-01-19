@@ -134,8 +134,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         console.log("AdminLayout getProfile response:", res);
 
         if (res.success && res.data) {
-          const userRole = res.data.role;
-          console.log("User role:", res);
+          const userRole = res.data.role?.name;
+          console.log("User role:", userRole);
 
           // Check if user has ROLE_ADMIN
           if (userRole !== "ROLE_ADMIN") {
@@ -150,7 +150,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             localStorage.setItem("token", refreshRes.data.token);
             const newProfileRes = await getProfile();
             if (newProfileRes.success && newProfileRes.data) {
-              const newUserRole = newProfileRes.data.role;
+              const newUserRole = newProfileRes.data.role?.name;
               // Check if user has ROLE_ADMIN
               if (newUserRole !== "ROLE_ADMIN") {
                 navigate("/404");
@@ -296,7 +296,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   {user?.fullName || user?.username || "Admin"}
                 </p>
                 <p className="text-white/50 text-xs truncate">
-                  {user?.role || "ROLE_ADMIN"}
+                  {user?.role?.name}
                 </p>
               </div>
             )}
