@@ -140,7 +140,7 @@ export default function TransactionList({
                     </div>
                     {tx.description && (
                       <div className="text-sm text-gray-500 truncate mt-0.5">
-                        {tx.description}
+                      Ghi chú: {tx.description}
                       </div>
                     )}
                     <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">

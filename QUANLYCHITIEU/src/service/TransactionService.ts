@@ -5,7 +5,7 @@ import type { TransactionResponse } from "../type/TransactionResponse";
 import { API_CONFIG, getApiUrl, getHeaders } from "../config/apiConfig";
 
 export async function createTransaction(
-  req: TransactionRequest
+  req: TransactionRequest,
 ): Promise<ApiResponse<Transaction>> {
   try {
     const res = await fetch(getApiUrl(API_CONFIG.TRANSACTIONS.CREATE), {
@@ -47,7 +47,7 @@ export async function createTransaction(
 
 export async function fetchTransactions(
   params?: Record<string, unknown>,
-  init?: RequestInit
+  init?: RequestInit,
 ): Promise<TransactionResponse[]> {
   const toDateOnly = (d: Date) => {
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -87,7 +87,7 @@ export async function fetchTransactions(
     });
   } catch (err) {
     throw new Error(
-      err instanceof Error ? err.message : "Không thể kết nối tới server"
+      err instanceof Error ? err.message : "Không thể kết nối tới server",
     );
   }
 
@@ -142,4 +142,49 @@ export async function fetchTransactions(
   }
 
   return [];
+}
+
+export interface TransferRequest {
+  amount: number;
+  walletIdTransfer: number;
+  walletIdReceive: number;
+  description?: string;
+}
+
+export async function transferMoney(
+  req: TransferRequest,
+): Promise<ApiResponse<TransactionResponse>> {
+  try {
+    const res = await fetch(getApiUrl(API_CONFIG.TRANSACTIONS.TRANSFER), {
+      method: "POST",
+      headers: getHeaders(true),
+      body: JSON.stringify(req),
+    });
+
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      if (json && typeof json === "object" && "success" in json) {
+        return json as ApiResponse<TransactionResponse>;
+      }
+      return {
+        success: false,
+        code: `HTTP_${res.status}`,
+        message: typeof json === "string" ? json : `HTTP ${res.status}`,
+        data: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    return json as ApiResponse<TransactionResponse>;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return {
+      success: false,
+      code: "CLIENT_ERROR",
+      message,
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
 }

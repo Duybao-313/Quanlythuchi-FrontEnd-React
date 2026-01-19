@@ -11,6 +11,7 @@ import TransactionHistoryPage from "../pages/HistoryTransactionPage";
 import AddCategoryPage from "../pages/AddCategoryPage";
 import StatisticsPage from "../pages/StatisticsPage";
 import AccountPage from "../pages/AccountPage";
+import TransferPage from "../pages/TransferPage";
 
 function AppRoutes() {
   return (
@@ -36,6 +37,14 @@ function AppRoutes() {
         element={
           <ClientLayout>
             <TransactionPage />
+          </ClientLayout>
+        }
+      />
+      <Route
+        path="/transfer"
+        element={
+          <ClientLayout>
+            <TransferPage />
           </ClientLayout>
         }
       />

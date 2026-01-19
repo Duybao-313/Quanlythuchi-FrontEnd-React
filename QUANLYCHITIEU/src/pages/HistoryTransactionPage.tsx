@@ -21,6 +21,13 @@ export default function TransactionHistoryPage(): JSX.Element {
   const [networkError, setNetworkError] = useState<string | null>(null);
 
   const [selectedWallet, setSelectedWallet] = useState<number | null>(null);
+
+  // Set ví mặc định là ví đầu tiên khi wallets load
+  useEffect(() => {
+    if (wallets.length > 0 && selectedWallet === null) {
+      setSelectedWallet(wallets[0].id);
+    }
+  }, [wallets, selectedWallet]);
   const [dateRangeType, setDateRangeType] = useState<DateRangeType>("DAY");
   const [anchorDate, setAnchorDate] = useState<Date>(() => new Date());
 
@@ -55,7 +62,7 @@ export default function TransactionHistoryPage(): JSX.Element {
 
     const fmt = (d: Date) =>
       `${String(d.getDate()).padStart(2, "0")}/${String(
-        d.getMonth() + 1
+        d.getMonth() + 1,
       ).padStart(2, "0")}`;
 
     return {
@@ -127,7 +134,7 @@ export default function TransactionHistoryPage(): JSX.Element {
         const d = typeof v === "string" ? new Date(v) : v;
         const pad = (n: number) => String(n).padStart(2, "0");
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
-          d.getDate()
+          d.getDate(),
         )}`;
       };
 
@@ -166,7 +173,7 @@ export default function TransactionHistoryPage(): JSX.Element {
           .includes("failed to fetch");
         if (!isAbort && isNetwork)
           setNetworkError(
-            "Không thể kết nối tới server. Vui lòng kiểm tra mạng."
+            "Không thể kết nối tới server. Vui lòng kiểm tra mạng.",
           );
         else if (!isAbort && !isNetwork)
           setNetworkError("Lỗi khi gọi API. Vui lòng thử lại sau.");

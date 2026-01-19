@@ -73,15 +73,27 @@ export default function HistoryHeader({
               onChange={(e) =>
                 onWalletChange(e.target.value ? Number(e.target.value) : null)
               }
-              className="bg-transparent text-sm font-medium text-gray-700 focus:outline-none cursor-pointer pr-6"
+              className="bg-transparent text-sm font-medium text-gray-700 focus:outline-none cursor-pointer pr-6 min-w-[120px] appearance-none"
             >
-              <option value="">Tất cả ví</option>
               {wallets.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name}
                 </option>
               ))}
             </select>
+            <svg
+              className="w-4 h-4 text-gray-400 pointer-events-none -ml-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
           </div>
 
           <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100 px-4 py-2.5 shadow-sm">
