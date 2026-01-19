@@ -15,6 +15,7 @@ import AccountPage from "../pages/AccountPage";
 import TransferPage from "../pages/TransferPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminUsers from "../pages/admin/AdminUsers";
 
 function AppRoutes() {
   return (
@@ -106,7 +107,7 @@ function AppRoutes() {
         path="/admin/users"
         element={
           <AdminLayout>
-            <AdminDashboard />
+            <AdminUsers />
           </AdminLayout>
         }
       />

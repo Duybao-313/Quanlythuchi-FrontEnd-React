@@ -5,6 +5,16 @@ export interface RecentUser {
   createdAt: string | null;
 }
 
+export interface AdminUser {
+  id: number;
+  username: string;
+  fullName: string | null;
+  email: string;
+  status: string;
+  createdAt: string | null;
+  walletCount: number;
+}
+
 export interface AdminOverview {
   totalUsers: number;
   activeUsersToday: number;
