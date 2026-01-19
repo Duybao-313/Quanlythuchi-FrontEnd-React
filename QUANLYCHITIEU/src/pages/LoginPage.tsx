@@ -47,7 +47,15 @@ export default function LoginPage() {
       const token = res.data?.jwt;
       if (token) localStorage.setItem("token", token);
       toast.success(res.message ?? "Đăng nhập thành công");
-      navigate("/"); // hoặc "/home"
+
+      // Kiểm tra role từ response login
+      const userRole = res.data?.role;
+      console.log("User role:", userRole);
+      if (userRole === "ROLE_ADMIN") {
+        navigate("/admin");
+      } else {
+        navigate("/home");
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         console.error(err.message);
