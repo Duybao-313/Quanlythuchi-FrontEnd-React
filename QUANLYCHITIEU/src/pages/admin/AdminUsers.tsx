@@ -43,8 +43,8 @@ export default function AdminUsers() {
               ...user,
               status: user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
             }
-          : user
-      )
+          : user,
+      ),
     );
   };
 
@@ -140,7 +140,9 @@ export default function AdminUsers() {
                         <p className="font-medium text-gray-800">
                           {user.fullName || "Chưa cập nhật"}
                         </p>
-                        <p className="text-sm text-gray-500">@{user.username}</p>
+                        <p className="text-sm text-gray-500">
+                          @{user.username}
+                        </p>
                       </div>
                     </div>
                   </td>
