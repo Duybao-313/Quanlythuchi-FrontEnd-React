@@ -5,6 +5,7 @@ import {
   getAdminCategories,
   deleteAdminCategory,
   saveGlobalCategory,
+  importCategories,
   type GlobalCategoryRequest,
 } from "../../service/AdminService";
 import { createCategoryForMe } from "../../service/UserService";
@@ -45,9 +46,12 @@ export default function AdminCategories() {
   // Add form states
   const [formName, setFormName] = useState("");
   const [formType, setFormType] = useState<"EXPENSE" | "INCOME">("EXPENSE");
-  const [formColor, setFormColor] = useState("");
   const [formFile, setFormFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Import Excel states
+  const [importing, setImporting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -97,26 +101,23 @@ export default function AdminCategories() {
     updates: Partial<{
       name: string;
       type: "EXPENSE" | "INCOME";
-      color: string;
     }>,
     file?: File | null,
   ) => {
     setUpdating(true);
     try {
       const data: GlobalCategoryRequest = {
-        id: category.id,
+        id: String(category.id),
         name: updates.name ?? category.name,
         type: updates.type ?? category.type,
-        color: updates.color ?? category.color ?? null,
-        UpdateFlag: true, // true = update existing
       };
 
-      await saveGlobalCategory(data, file);
+      const response = await saveGlobalCategory(data, file);
 
       setCategories((prev) =>
         prev.map((c) => (c.id === category.id ? { ...c, ...updates } : c)),
       );
-      toast.success("Cập nhật thành công!");
+      toast.success(response.message ?? "Cập nhật thành công!");
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Có lỗi xảy ra khi cập nhật",
@@ -162,7 +163,6 @@ export default function AdminCategories() {
   const handleOpenAddModal = () => {
     setFormName("");
     setFormType("EXPENSE");
-    setFormColor("");
     setFormFile(null);
     setShowAddModal(true);
   };
@@ -184,6 +184,7 @@ export default function AdminCategories() {
       if (res && res.success) {
         toast.success(res.message ?? "Thêm danh mục thành công!");
         setShowAddModal(false);
+        setFormFile(null);
         fetchCategories();
       } else {
         toast.error(res?.message ?? "Thêm danh mục thất bại");
@@ -206,8 +207,8 @@ export default function AdminCategories() {
 
     setSubmitting(true);
     try {
-      await deleteAdminCategory(selectedCategory.id);
-      toast.success("Xóa danh mục thành công!");
+      const response = await deleteAdminCategory(selectedCategory.id);
+      toast.success(response.message ?? "Xóa danh mục thành công!");
       setShowDeleteModal(false);
       fetchCategories();
     } catch (err) {
@@ -274,10 +275,80 @@ export default function AdminCategories() {
             chi tiêu, {incomeCategories.length} thu nhập)
           </p>
         </div>
-        <button
-          onClick={handleOpenAddModal}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
-        >
+        <div className="flex items-center gap-3">
+          {/* Import Excel Button */}
+          <input
+            type="file"
+            ref={importInputRef}
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              
+              setImporting(true);
+              try {
+                const res = await importCategories(file);
+                const { total, successCount, errors } = res.data;
+                
+                if (successCount === total) {
+                  toast.success(`Import thành công ${successCount}/${total} dòng!`);
+                } else if (successCount > 0) {
+                  toast.warning(
+                    `Import thành công ${successCount}/${total} dòng. ${errors.length} dòng lỗi.`
+                  );
+                } else {
+                  toast.error(`Import thất bại! ${errors.length} dòng lỗi.`);
+                }
+                
+                // Hiển thị chi tiết lỗi nếu có
+                if (errors.length > 0) {
+                  errors.forEach((err) => {
+                    toast.error(`Dòng ${err.row}: ${err.message}`, {
+                      autoClose: 5000,
+                    });
+                  });
+                }
+                
+                fetchCategories();
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Lỗi khi import");
+              } finally {
+                setImporting(false);
+                if (importInputRef.current) {
+                  importInputRef.current.value = "";
+                }
+              }
+            }}
+          />
+          <button
+            onClick={() => importInputRef.current?.click()}
+            disabled={importing}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+          >
+            {importing ? (
+              <>
+                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Đang import...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <span>Import Excel</span>
+              </>
+            )}
+          </button>
+          
+          {/* Add Category Button */}
+          <button
+            onClick={handleOpenAddModal}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+          >
           <svg
             className="w-5 h-5"
             fill="none"
@@ -293,6 +364,7 @@ export default function AdminCategories() {
           </svg>
           Thêm danh mục
         </button>
+        </div>
       </div>
 
       {/* Categories Table */}
@@ -555,76 +627,253 @@ export default function AdminCategories() {
       {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Thêm danh mục mới
-            </h2>
-            <div className="space-y-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-orange-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  Thêm danh mục mới
+                </h2>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setFormFile(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg
+                  className="w-5 h-5 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              {/* Icon Upload */}
+              <div className="flex flex-col items-center">
+                <label className="block text-sm font-medium text-gray-700 mb-3 self-start">
+                  Icon danh mục
+                </label>
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 hover:border-orange-400 transition-colors">
+                    {formFile ? (
+                      <img
+                        src={URL.createObjectURL(formFile)}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-center">
+                        <svg
+                          className="w-8 h-8 text-gray-400 mx-auto"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span className="text-xs text-gray-500 mt-1">
+                          Chọn ảnh
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFormFile(e.target.files?.[0] || null)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  {formFile && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormFile(null);
+                      }}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  PNG, JPG tối đa 2MB
+                </p>
+              </div>
+
+              {/* Name Input */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tên danh mục
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tên danh mục <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                   placeholder="Nhập tên danh mục"
                 />
               </div>
+
+              {/* Type Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Loại
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Loại danh mục <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={formType}
-                  onChange={(e) =>
-                    setFormType(e.target.value as "EXPENSE" | "INCOME")
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <option value="EXPENSE">Chi tiêu</option>
-                  <option value="INCOME">Thu nhập</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Màu sắc (tùy chọn)
-                </label>
-                <input
-                  type="text"
-                  value={formColor}
-                  onChange={(e) => setFormColor(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  placeholder="#FF5733"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Icon (tùy chọn)
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFormFile(e.target.files?.[0] || null)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormType("EXPENSE")}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
+                      formType === "EXPENSE"
+                        ? "border-red-500 bg-red-50 text-red-700"
+                        : "border-gray-200 hover:border-gray-300 text-gray-600"
+                    }`}
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 13l-5 5m0 0l-5-5m5 5V6"
+                      />
+                    </svg>
+                    <span className="font-medium">Chi tiêu</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormType("INCOME")}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
+                      formType === "INCOME"
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-gray-200 hover:border-gray-300 text-gray-600"
+                    }`}
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 11l5-5m0 0l5 5m-5-5v12"
+                      />
+                    </svg>
+                    <span className="font-medium">Thu nhập</span>
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+
+            {/* Actions */}
+            <div className="flex gap-3 mt-8">
               <button
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                onClick={() => {
+                  setShowAddModal(false);
+                  setFormFile(null);
+                }}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
                 disabled={submitting}
               >
                 Hủy
               </button>
               <button
                 onClick={handleCreate}
-                className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
-                disabled={submitting}
+                className="flex-1 px-4 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50 font-medium flex items-center justify-center gap-2"
+                disabled={submitting || !formName.trim()}
               >
-                {submitting ? "Đang thêm..." : "Thêm"}
+                {submitting ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>Đang thêm...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                    <span>Thêm danh mục</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -654,14 +903,19 @@ export default function AdminCategories() {
               <h2 className="text-xl font-bold text-gray-800 mb-2">
                 Xác nhận xóa
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-2">
                 Bạn có chắc muốn xóa danh mục "
                 <span className="font-semibold">{selectedCategory.name}</span>"?
-                <br />
-                <span className="text-sm text-red-500">
-                  Hành động này không thể hoàn tác.
-                </span>
               </p>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-red-600 font-medium">
+                  ⚠️ Cảnh báo: Tất cả giao dịch liên quan đến danh mục này sẽ bị
+                  xóa vĩnh viễn!
+                </p>
+                <p className="text-xs text-red-500 mt-1">
+                  Hành động này không thể hoàn tác.
+                </p>
+              </div>
             </div>
             <div className="flex gap-3">
               <button
