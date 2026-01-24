@@ -1,8 +1,8 @@
 // Shared API Configuration
-const API_BASE_URL =
-import.meta.env.VITE_API_BASE_URL || "https://java-springboot-quanlythuchi-production.up.railway.app";
 // const API_BASE_URL =
-//   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+// import.meta.env.VITE_API_BASE_URL || "https://java-springboot-quanlythuchi-production.up.railway.app";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 export const API_CONFIG = {
   BASE_URL: API_BASE_URL,
