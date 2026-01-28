@@ -7,6 +7,7 @@ import { API_CONFIG, getApiUrl, getHeaders } from "../config/apiConfig";
 export async function createTransaction(
   req: TransactionRequest,
 ): Promise<ApiResponse<Transaction>> {
+  console.log("Creating transaction with request:", req);
   try {
     const res = await fetch(getApiUrl(API_CONFIG.TRANSACTIONS.CREATE), {
       method: "POST",

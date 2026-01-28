@@ -114,6 +114,7 @@ export async function createCategoryForMe(
   const jsonBlob = new Blob([JSON.stringify(payload)], {
     type: "application/json",
   });
+  console.log("JSON Blob:", payload);
   form.append("data", jsonBlob, "data.json");
 
   if (file) form.append("file", file);
