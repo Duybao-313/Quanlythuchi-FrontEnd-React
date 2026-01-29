@@ -145,7 +145,7 @@ const menuItems = [
     ),
   },
   {
-    path: "/budgets/create",
+    path: "/budgets",
     label: "Ngân sách",
     icon: (
       <svg

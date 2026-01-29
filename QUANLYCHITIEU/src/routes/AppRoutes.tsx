@@ -15,6 +15,8 @@ import AccountPage from "../pages/AccountPage";
 import TransferPage from "../pages/TransferPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import CreateBudgetPage from "../pages/CreateBudgetPage";
+import BudgetListPage from "../pages/BudgetListPage";
+import BudgetDetailPage from "../pages/BudgetDetailPage";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminUsers from "../pages/admin/AdminUsers";
 import AdminCategories from "../pages/admin/AdminCategories";
@@ -104,10 +106,18 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/budgets/:id"
+        element={
+          <ClientLayout>
+            <BudgetDetailPage />
+          </ClientLayout>
+        }
+      />
+      <Route
         path="/budgets"
         element={
           <ClientLayout>
-            <CreateBudgetPage />
+            <BudgetListPage />
           </ClientLayout>
         }
       />

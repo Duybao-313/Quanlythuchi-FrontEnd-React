@@ -11,7 +11,6 @@ import type {
  * Response cho Scope
  */
 export interface BudgetScopeResponse {
-  id: number;
   scopeType: ScopeType;
   refId: number;
 }
@@ -20,26 +19,45 @@ export interface BudgetScopeResponse {
  * Response cho Threshold
  */
 export interface BudgetThresholdResponse {
-  id: number;
   percent: number;
   action: ThresholdAction;
 }
 
 /**
- * Response cho Budget
+ * Response cho Budget list item (từ API list)
  */
-export interface BudgetResponse {
+export interface BudgetListItem {
   id: number;
   name: string;
+  ownerId: number;
   amount: number;
-  spentAmount: number;
-  remainingAmount: number;
+  startDate: string;
+  endDate: string;
+  periodType: PeriodType;
+  status: BudgetStatus;
+}
+
+/**
+ * Response cho Budget detail (từ API detail)
+ */
+export interface BudgetDetailResponse {
+  name: string;
+  amount: number;
   startDate: string;
   endDate: string;
   periodType: PeriodType;
   budgetStatus: BudgetStatus;
   scopes: BudgetScopeResponse[];
   thresholds: BudgetThresholdResponse[];
-  createdAt: string;
-  updatedAt: string;
+}
+
+/**
+ * Response pagination cho danh sách budget
+ */
+export interface BudgetPageResponse {
+  content: BudgetListItem[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }

@@ -1,7 +1,11 @@
 // src/service/BudgetService.ts
 
 import type { ApiResponse } from "../type/ApiResponse";
-import type { BudgetResponse } from "../type/BudgetResponse";
+import type {
+  BudgetDetailResponse,
+  BudgetListItem,
+  BudgetPageResponse,
+} from "../type/BudgetResponse";
 import type {
   CreateBudgetRequest,
   UpdateBudgetRequest,
@@ -23,16 +27,61 @@ async function handleResponse<T>(res: Response): Promise<T | null> {
 }
 
 /**
- * Lấy danh sách tất cả budgets
+ * Pagination params
  */
-export async function fetchBudgets(): Promise<BudgetResponse[]> {
-  const res = await fetch(getApiUrl(API_CONFIG.BUDGETS.BASE), {
+export interface BudgetPaginationParams {
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+/**
+ * Lấy danh sách budgets với pagination
+ */
+export async function fetchBudgets(
+  params?: BudgetPaginationParams,
+): Promise<BudgetListItem[]> {
+  const searchParams = new URLSearchParams();
+  searchParams.append("page", String(params?.page ?? 0));
+  searchParams.append("size", String(params?.size ?? 20));
+  if (params?.sort) {
+    searchParams.append("sort", params.sort);
+  } else {
+    searchParams.append("sort", "startDate,desc");
+  }
+
+  const url = `${getApiUrl(API_CONFIG.BUDGETS.BASE)}?${searchParams.toString()}`;
+  const res = await fetch(url, {
     method: "GET",
     headers: getHeaders(true),
   });
 
-  const data = await handleResponse<BudgetResponse[]>(res);
-  return data ?? [];
+  const data = await handleResponse<BudgetPageResponse>(res);
+  return data?.content ?? [];
+}
+
+/**
+ * Lấy danh sách budgets với thông tin pagination đầy đủ
+ */
+export async function fetchBudgetsWithPagination(
+  params?: BudgetPaginationParams,
+): Promise<BudgetPageResponse | null> {
+  const searchParams = new URLSearchParams();
+  searchParams.append("page", String(params?.page ?? 0));
+  searchParams.append("size", String(params?.size ?? 20));
+  if (params?.sort) {
+    searchParams.append("sort", params.sort);
+  } else {
+    searchParams.append("sort", "startDate,desc");
+  }
+
+  const url = `${getApiUrl(API_CONFIG.BUDGETS.BASE)}?${searchParams.toString()}`;
+  const res = await fetch(url, {
+    method: "GET",
+    headers: getHeaders(true),
+  });
+
+  return await handleResponse<BudgetPageResponse>(res);
 }
 
 /**
@@ -40,13 +89,13 @@ export async function fetchBudgets(): Promise<BudgetResponse[]> {
  */
 export async function fetchBudgetById(
   id: number,
-): Promise<BudgetResponse | null> {
+): Promise<BudgetDetailResponse | null> {
   const res = await fetch(getApiUrl(`${API_CONFIG.BUDGETS.BASE}/${id}`), {
     method: "GET",
     headers: getHeaders(true),
   });
 
-  return await handleResponse<BudgetResponse>(res);
+  return await handleResponse<BudgetDetailResponse>(res);
 }
 
 /**
@@ -54,14 +103,14 @@ export async function fetchBudgetById(
  */
 export async function createBudget(
   request: CreateBudgetRequest,
-): Promise<BudgetResponse | null> {
+): Promise<BudgetDetailResponse | null> {
   const res = await fetch(getApiUrl(API_CONFIG.BUDGETS.BASE), {
     method: "POST",
     headers: getHeaders(true),
     body: JSON.stringify(request),
   });
 
-  return await handleResponse<BudgetResponse>(res);
+  return await handleResponse<BudgetDetailResponse>(res);
 }
 
 /**
@@ -70,14 +119,14 @@ export async function createBudget(
 export async function updateBudget(
   id: number,
   request: UpdateBudgetRequest,
-): Promise<BudgetResponse | null> {
+): Promise<BudgetDetailResponse | null> {
   const res = await fetch(getApiUrl(`${API_CONFIG.BUDGETS.BASE}/${id}`), {
     method: "PUT",
     headers: getHeaders(true),
     body: JSON.stringify(request),
   });
 
-  return await handleResponse<BudgetResponse>(res);
+  return await handleResponse<BudgetDetailResponse>(res);
 }
 
 /**

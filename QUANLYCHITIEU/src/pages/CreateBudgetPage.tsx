@@ -241,9 +241,15 @@ export default function CreateBudgetPage(): JSX.Element {
       return wallets.map((w) => ({ id: w.id, name: w.name }));
     } else if (newScopeType === ScopeType.CATEGORY) {
       return categories.map((c) => ({ id: c.id, name: c.name }));
+    } else if (newScopeType === ScopeType.ACCOUNT) {
+      // ACCOUNT sử dụng cùng danh sách với WALLET
+      return wallets.map((w) => ({ id: w.id, name: w.name }));
     }
     return [];
   };
+
+  // Chỉ hiển thị CATEGORY và WALLET trong dropdown (loại bỏ ACCOUNT nếu không cần)
+  const availableScopeTypes = [ScopeType.CATEGORY, ScopeType.WALLET];
 
   // Format currency
   const formatCurrency = (value: number): string => {
@@ -530,7 +536,7 @@ export default function CreateBudgetPage(): JSX.Element {
                   }}
                   className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition-all outline-none appearance-none cursor-pointer"
                 >
-                  {Object.values(ScopeType).map((type) => (
+                  {availableScopeTypes.map((type) => (
                     <option key={type} value={type}>
                       {ScopeTypeLabels[type]}
                     </option>
