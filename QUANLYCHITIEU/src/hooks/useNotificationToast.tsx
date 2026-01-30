@@ -33,7 +33,11 @@ export function useNotificationToast() {
    * Lấy icon màu dựa vào title
    */
   const getToastType = (title: string): "warning" | "error" | "info" => {
-    if (title.includes("vượt") || title.includes("chặn") || title.includes("100%")) {
+    if (
+      title.includes("vượt") ||
+      title.includes("chặn") ||
+      title.includes("100%")
+    ) {
       return "error";
     }
     if (title.includes("ngưỡng") || title.includes("%")) {
@@ -83,7 +87,7 @@ export function useNotificationToast() {
         draggable: true,
         type: toastType,
         className: "!bg-white !shadow-xl !rounded-xl !border !border-gray-100",
-      }
+      },
     );
   };
 
