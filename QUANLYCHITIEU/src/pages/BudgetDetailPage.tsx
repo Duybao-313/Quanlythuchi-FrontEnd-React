@@ -25,6 +25,7 @@ export default function BudgetDetailPage(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Data for scope names
   const [wallets, setWallets] = useState<Wallet[]>([]);
@@ -73,9 +74,6 @@ export default function BudgetDetailPage(): JSX.Element {
   const handleDelete = async () => {
     if (!id) return;
 
-    const confirmed = window.confirm("Bạn có chắc muốn xóa ngân sách này?");
-    if (!confirmed) return;
-
     setDeleting(true);
     try {
       await deleteBudget(Number(id));
@@ -88,6 +86,7 @@ export default function BudgetDetailPage(): JSX.Element {
       toast.error(message);
     } finally {
       setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -214,7 +213,26 @@ export default function BudgetDetailPage(): JSX.Element {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={handleDelete}
+            onClick={() => navigate(`/budgets/${id}/edit`)}
+            className="px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/30 font-medium flex items-center gap-2"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+            Cập nhật
+          </button>
+          <button
+            onClick={() => setShowDeleteModal(true)}
             disabled={deleting}
             className="px-4 py-2.5 border-2 border-rose-200 text-rose-600 rounded-xl hover:bg-rose-50 transition-all font-medium disabled:opacity-50 flex items-center gap-2"
           >
@@ -243,18 +261,12 @@ export default function BudgetDetailPage(): JSX.Element {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Info */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Amount Card */}
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-indigo-100 text-sm font-medium">Ngân sách</p>
-                <p className="text-3xl font-bold mt-1">
-                  {formatCurrency(budget.amount)}
-                </p>
-              </div>
-              <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
+          {/* Budget Overview Card */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
                 <svg
-                  className="w-8 h-8"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -263,11 +275,171 @@ export default function BudgetDetailPage(): JSX.Element {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                   />
                 </svg>
               </div>
+              <h2 className="text-lg font-bold text-gray-800">
+                Tổng quan ngân sách
+              </h2>
             </div>
+
+            {/* Progress Bar */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-600">
+                  Tiến độ sử dụng
+                </span>
+                <span
+                  className={`text-sm font-bold ${
+                    budget.percentUsed >= 100
+                      ? "text-rose-600"
+                      : budget.percentUsed >= 80
+                        ? "text-orange-600"
+                        : budget.percentUsed >= 50
+                          ? "text-amber-600"
+                          : "text-emerald-600"
+                  }`}
+                >
+                  {budget.percentUsed.toFixed(1)}%
+                </span>
+              </div>
+              <div className="h-4 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    budget.percentUsed >= 100
+                      ? "bg-gradient-to-r from-rose-500 to-red-600"
+                      : budget.percentUsed >= 80
+                        ? "bg-gradient-to-r from-orange-500 to-amber-500"
+                        : budget.percentUsed >= 50
+                          ? "bg-gradient-to-r from-amber-400 to-yellow-500"
+                          : "bg-gradient-to-r from-emerald-400 to-green-500"
+                  }`}
+                  style={{ width: `${Math.min(budget.percentUsed, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Amount Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Ngân sách */}
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg
+                    className="w-5 h-5 text-indigo-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span className="text-indigo-100 text-sm font-medium">
+                    Ngân sách
+                  </span>
+                </div>
+                <p className="text-xl font-bold">
+                  {formatCurrency(budget.amount)}
+                </p>
+              </div>
+
+              {/* Đã sử dụng */}
+              <div
+                className={`rounded-xl p-4 ${
+                  budget.percentUsed >= 80
+                    ? "bg-gradient-to-br from-rose-500 to-red-600 text-white"
+                    : "bg-gradient-to-br from-amber-500 to-orange-600 text-white"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <svg
+                    className="w-5 h-5 opacity-70"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium opacity-90">
+                    Đã sử dụng
+                  </span>
+                </div>
+                <p className="text-xl font-bold">
+                  {formatCurrency(budget.spent)}
+                </p>
+              </div>
+
+              {/* Còn lại */}
+              <div
+                className={`rounded-xl p-4 ${
+                  budget.remaining <= 0
+                    ? "bg-gradient-to-br from-gray-500 to-gray-600 text-white"
+                    : "bg-gradient-to-br from-emerald-500 to-green-600 text-white"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <svg
+                    className="w-5 h-5 opacity-70"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium opacity-90">
+                    Còn lại
+                  </span>
+                </div>
+                <p className="text-xl font-bold">
+                  {formatCurrency(budget.remaining)}
+                </p>
+              </div>
+            </div>
+
+            {/* Warning if over budget */}
+            {budget.percentUsed >= 100 && (
+              <div className="mt-4 p-4 bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg
+                      className="w-5 h-5 text-rose-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-rose-700 font-semibold">
+                      Đã vượt ngân sách!
+                    </p>
+                    <p className="text-rose-600 text-sm">
+                      Bạn đã chi tiêu vượt quá ngân sách cho phép.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Date Range Card */}
@@ -473,6 +645,123 @@ export default function BudgetDetailPage(): JSX.Element {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowDeleteModal(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-rose-500 to-red-600 p-6 text-white">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Xác nhận xóa</h3>
+                  <p className="text-rose-100 text-sm">
+                    Hành động này không thể hoàn tác
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                Bạn có chắc chắn muốn <strong>xóa vĩnh viễn</strong> ngân sách{" "}
+                <span className="font-semibold text-rose-600">
+                  "{budget.name}"
+                </span>{" "}
+                không?
+              </p>
+
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <svg
+                    className="w-5 h-5 text-rose-500 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <div className="text-sm text-rose-700">
+                    <p className="font-medium mb-1">Lưu ý:</p>
+                    <ul className="list-disc list-inside space-y-1 text-rose-600">
+                      <li>Tất cả dữ liệu liên quan sẽ bị xóa</li>
+                      <li>Không thể khôi phục sau khi xóa</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 p-6 pt-0">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-semibold disabled:opacity-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-xl hover:from-rose-600 hover:to-red-700 transition-all shadow-lg shadow-rose-500/30 font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Đang xóa...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    <span>Xóa vĩnh viễn</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

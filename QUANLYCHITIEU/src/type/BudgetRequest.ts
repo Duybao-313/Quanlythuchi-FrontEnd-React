@@ -29,6 +29,7 @@ export interface BudgetThreshold {
 export interface CreateBudgetRequest {
   name: string;
   amount: number;
+  currency?: string; // Default: VND
   startDate: string; // Format: YYYY-MM-DD
   endDate: string; // Format: YYYY-MM-DD
   periodType: PeriodType;
@@ -38,8 +39,16 @@ export interface CreateBudgetRequest {
 }
 
 /**
- * Request cập nhật Budget
+ * Request cập nhật Budget (same as create, id is in URL)
  */
-export interface UpdateBudgetRequest extends Partial<CreateBudgetRequest> {
-  id: number;
+export interface UpdateBudgetRequest {
+  name: string;
+  amount: number;
+  currency: string;
+  startDate: string;
+  endDate: string;
+  periodType: PeriodType;
+  budgetStatus: BudgetStatus;
+  scopes: BudgetScope[];
+  thresholds: BudgetThreshold[];
 }

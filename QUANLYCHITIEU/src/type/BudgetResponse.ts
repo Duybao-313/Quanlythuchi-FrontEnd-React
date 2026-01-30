@@ -43,6 +43,9 @@ export interface BudgetListItem {
 export interface BudgetDetailResponse {
   name: string;
   amount: number;
+  spent: number;
+  remaining: number;
+  percentUsed: number;
   startDate: string;
   endDate: string;
   periodType: PeriodType;

@@ -1,8 +1,8 @@
-// src/pages/CreateBudgetPage.tsx
+// src/pages/EditBudgetPage.tsx
 import React, { useState, useEffect, type JSX } from "react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
-import { createBudget } from "../service/BudgetService";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { fetchBudgetById, updateBudget } from "../service/BudgetService";
 import { fetchWallets } from "../service/WalletService";
 import { listCategories } from "../service/Categories";
 import type { Wallet } from "../type/Wallet";
@@ -11,7 +11,7 @@ import { TransactionType } from "../type/TransactionType";
 import type {
   BudgetScope,
   BudgetThreshold,
-  CreateBudgetRequest,
+  UpdateBudgetRequest,
 } from "../type/BudgetRequest";
 import {
   BudgetStatus,
@@ -24,11 +24,24 @@ import {
   ThresholdActionLabels,
 } from "../type/BudgetEnums";
 
-// Chỉ cho phép chọn DRAFT và ACTIVE khi tạo mới
-const ALLOWED_CREATE_STATUSES = [BudgetStatus.DRAFT, BudgetStatus.ACTIVE];
+// Cho phép tất cả trạng thái khi cập nhật
+const ALLOWED_UPDATE_STATUSES = [
+  BudgetStatus.DRAFT,
+  BudgetStatus.ACTIVE,
+  BudgetStatus.PAUSED,
+  BudgetStatus.COMPLETED,
+  BudgetStatus.EXPIRED,
+  BudgetStatus.CANCELLED,
+];
 
-export default function CreateBudgetPage(): JSX.Element {
+export default function EditBudgetPage(): JSX.Element {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  // Loading states
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Form state
   const [name, setName] = useState("");
@@ -48,11 +61,7 @@ export default function CreateBudgetPage(): JSX.Element {
   const [newScopeRefId, setNewScopeRefId] = useState<number>(0);
 
   // Thresholds state
-  const [thresholds, setThresholds] = useState<BudgetThreshold[]>([
-    { percent: 70, action: ThresholdAction.NOTIFY },
-    { percent: 90, action: ThresholdAction.NOTIFY },
-    { percent: 100, action: ThresholdAction.BLOCK },
-  ]);
+  const [thresholds, setThresholds] = useState<BudgetThreshold[]>([]);
   const [newThresholdPercent, setNewThresholdPercent] = useState<number>(50);
   const [newThresholdAction, setNewThresholdAction] = useState<ThresholdAction>(
     ThresholdAction.NOTIFY,
@@ -61,63 +70,74 @@ export default function CreateBudgetPage(): JSX.Element {
   // Data for dropdowns
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
-  // Load wallets and categories
+  // Load initial data
   useEffect(() => {
     const loadData = async () => {
-      setLoading(true);
+      if (!id) {
+        setError("ID ngân sách không hợp lệ");
+        setInitialLoading(false);
+        return;
+      }
+
+      setInitialLoading(true);
+      setError(null);
+
       try {
-        const [walletsRes, categoriesRes] = await Promise.all([
+        const [budgetData, walletsRes, categoriesRes] = await Promise.all([
+          fetchBudgetById(Number(id)),
           fetchWallets(),
           listCategories(),
         ]);
+
+        if (!budgetData) {
+          setError("Không tìm thấy ngân sách");
+          return;
+        }
+
+        // Set form data from budget
+        setName(budgetData.name);
+        setAmount(budgetData.amount);
+        setStartDate(budgetData.startDate);
+        setEndDate(budgetData.endDate);
+        setPeriodType(budgetData.periodType as PeriodType);
+        setBudgetStatus(budgetData.budgetStatus as BudgetStatus);
+
+        // Set scopes
+        if (budgetData.scopes && budgetData.scopes.length > 0) {
+          setScopes(
+            budgetData.scopes.map((s) => ({
+              scopeType: s.scopeType as ScopeType,
+              refId: s.refId,
+            })),
+          );
+        }
+
+        // Set thresholds
+        if (budgetData.thresholds && budgetData.thresholds.length > 0) {
+          setThresholds(
+            budgetData.thresholds.map((t) => ({
+              percent: t.percent,
+              action: t.action as ThresholdAction,
+            })),
+          );
+        }
+
         setWallets(walletsRes.data ?? []);
         setCategories(categoriesRes ?? []);
-      } catch (error) {
-        console.error("Error loading data:", error);
-        toast.error("Không thể tải dữ liệu");
+      } catch (err) {
+        console.error("Error loading data:", err);
+        const message =
+          err instanceof Error ? err.message : "Không thể tải dữ liệu";
+        setError(message);
+        toast.error(message);
       } finally {
-        setLoading(false);
+        setInitialLoading(false);
       }
     };
+
     loadData();
-  }, []);
-
-  // Tự động điều chỉnh ngày kết thúc khi thay đổi period type hoặc ngày bắt đầu
-  useEffect(() => {
-    if (!startDate) return;
-
-    const start = new Date(startDate);
-    let end: Date;
-
-    switch (periodType) {
-      case PeriodType.WEEKLY:
-        // Tính ngày kết thúc tuần (7 ngày)
-        end = new Date(start);
-        end.setDate(start.getDate() + 6);
-        break;
-      case PeriodType.MONTHLY:
-        // Tính ngày cuối tháng
-        end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
-        break;
-      case PeriodType.ONE_TIME:
-        // Giữ nguyên ngày kết thúc đã chọn hoặc mặc định 30 ngày
-        if (!endDate) {
-          end = new Date(start);
-          end.setDate(start.getDate() + 30);
-        } else {
-          return; // Không tự động điều chỉnh cho ONE_TIME
-        }
-        break;
-      default:
-        return;
-    }
-
-    setEndDate(end.toISOString().split("T")[0]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [periodType, startDate]);
+  }, [id]);
 
   // Validate ngày theo period type
   const validateDateRange = (
@@ -137,7 +157,6 @@ export default function CreateBudgetPage(): JSX.Element {
       case PeriodType.WEEKLY:
         return diffDays >= 0 && diffDays <= 6;
       case PeriodType.MONTHLY:
-        // Cho phép từ 28-31 ngày
         return diffDays >= 27 && diffDays <= 31;
       case PeriodType.ONE_TIME:
         return diffDays >= 0;
@@ -246,13 +265,12 @@ export default function CreateBudgetPage(): JSX.Element {
         .filter((c) => c.type === TransactionType.EXPENSE)
         .map((c) => ({ id: c.id, name: c.name }));
     } else if (newScopeType === ScopeType.ACCOUNT) {
-      // ACCOUNT sử dụng cùng danh sách với WALLET
       return wallets.map((w) => ({ id: w.id, name: w.name }));
     }
     return [];
   };
 
-  // Chỉ hiển thị CATEGORY và WALLET trong dropdown (loại bỏ ACCOUNT nếu không cần)
+  // Chỉ hiển thị CATEGORY và WALLET trong dropdown
   const availableScopeTypes = [ScopeType.CATEGORY, ScopeType.WALLET];
 
   // Format currency
@@ -266,6 +284,11 @@ export default function CreateBudgetPage(): JSX.Element {
   // Handle submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!id) {
+      toast.error("ID ngân sách không hợp lệ");
+      return;
+    }
 
     if (!name.trim()) {
       toast.error("Vui lòng nhập tên ngân sách");
@@ -289,9 +312,10 @@ export default function CreateBudgetPage(): JSX.Element {
       return;
     }
 
-    const request: CreateBudgetRequest = {
+    const request: UpdateBudgetRequest = {
       name: name.trim(),
       amount,
+      currency: "VND",
       startDate,
       endDate,
       periodType,
@@ -302,13 +326,13 @@ export default function CreateBudgetPage(): JSX.Element {
 
     setSubmitting(true);
     try {
-      await createBudget(request);
-      toast.success("Tạo ngân sách thành công!");
-      navigate("/budgets");
+      await updateBudget(Number(id), request);
+      toast.success("Cập nhật ngân sách thành công!");
+      navigate(`/budgets/${id}`);
     } catch (error) {
-      console.error("Error creating budget:", error);
+      console.error("Error updating budget:", error);
       toast.error(
-        error instanceof Error ? error.message : "Không thể tạo ngân sách",
+        error instanceof Error ? error.message : "Không thể cập nhật ngân sách",
       );
     } finally {
       setSubmitting(false);
@@ -317,7 +341,7 @@ export default function CreateBudgetPage(): JSX.Element {
 
   const endDateConstraints = getEndDateConstraints();
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className="max-w-5xl mx-auto">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 p-12 text-center">
@@ -331,24 +355,82 @@ export default function CreateBudgetPage(): JSX.Element {
     );
   }
 
+  if (error) {
+    return (
+      <div className="max-w-5xl mx-auto">
+        <div className="bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl shadow-xl p-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-rose-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="text-rose-700 font-semibold">Đã xảy ra lỗi</p>
+              <p className="text-rose-600 text-sm mt-1">{error}</p>
+            </div>
+          </div>
+          <Link
+            to="/budgets"
+            className="mt-6 inline-block px-6 py-2.5 bg-rose-500 text-white rounded-xl hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/30 font-medium"
+          >
+            Quay lại danh sách
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Tạo ngân sách mới
-          </h1>
-          <p className="text-gray-500 mt-1">
-            Thiết lập ngân sách để quản lý chi tiêu hiệu quả
-          </p>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate(`/budgets/${id}`)}
+            className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition-colors"
+          >
+            <svg
+              className="w-5 h-5 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Cập nhật ngân sách
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Chỉnh sửa thông tin ngân sách "{name}"
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <span
             className={`px-4 py-2 rounded-xl text-sm font-medium ${
               budgetStatus === BudgetStatus.ACTIVE
                 ? "bg-emerald-100 text-emerald-600"
-                : "bg-gray-100 text-gray-600"
+                : budgetStatus === BudgetStatus.PAUSED
+                  ? "bg-amber-100 text-amber-600"
+                  : "bg-gray-100 text-gray-600"
             }`}
           >
             {BudgetStatusLabels[budgetStatus]}
@@ -456,7 +538,7 @@ export default function CreateBudgetPage(): JSX.Element {
                       }
                       className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none appearance-none cursor-pointer"
                     >
-                      {ALLOWED_CREATE_STATUSES.map((status) => (
+                      {ALLOWED_UPDATE_STATUSES.map((status) => (
                         <option key={status} value={status}>
                           {BudgetStatusLabels[status]}
                         </option>
@@ -804,7 +886,7 @@ export default function CreateBudgetPage(): JSX.Element {
         <div className="flex flex-col md:flex-row gap-4 pt-6">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(`/budgets/${id}`)}
             className="flex-1 px-6 py-4 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-semibold"
           >
             Hủy
@@ -817,7 +899,7 @@ export default function CreateBudgetPage(): JSX.Element {
             {submitting ? (
               <>
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span>Đang tạo...</span>
+                <span>Đang cập nhật...</span>
               </>
             ) : (
               <>
@@ -834,7 +916,7 @@ export default function CreateBudgetPage(): JSX.Element {
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
-                <span>Tạo ngân sách</span>
+                <span>Cập nhật ngân sách</span>
               </>
             )}
           </button>
